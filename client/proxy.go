@@ -181,11 +181,10 @@ func (c *ThreeScaleClient) getProxyConfig(token, endpoint string) (ProxyConfigEl
 	req.Header.Set("accept", "application/json")
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return pc, genRespErr("get latest proxy config", err.Error())
 	}
+	defer resp.Body.Close()
 
 	// TODO - Add some generic json handling
 	if resp.StatusCode != http.StatusOK {
