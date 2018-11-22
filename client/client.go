@@ -148,22 +148,6 @@ func handleJsonResp(resp *http.Response, expectCode int, decodeInto interface{})
 	return nil
 }
 
-// Decodes and transforms an API response error into a string
-func handleErrResp(resp *http.Response) string {
-	var errResp ErrorResp
-	errMsg := fmt.Sprintf("status code: %v", resp.StatusCode)
-	err := xml.NewDecoder(resp.Body).Decode(&errResp)
-	if err == nil {
-		errMsg = fmt.Sprintf("%s - reason: %s", errMsg, errResp.Error.Text)
-	}
-	return errMsg
-}
-
-// Helper method to generate error message for client functions
-func genRespErr(ep string, err string) error {
-	return fmt.Errorf("error calling %s endpoint - %s", ep, err)
-}
-
 // handleXMLErrResp decodes an XML response from 3scale system
 // into an error of type ApiErr
 func handleXMLErrResp(resp *http.Response) error {

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -28,18 +27,12 @@ func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name s
 	}
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return m, genRespErr("create metric", err.Error())
+		return m, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		return m, genRespErr("create metric", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&m); err != nil {
-		return m, genRespErr("create metric", err.Error())
-	}
-	return m, nil
+	err = handleXMLResp(resp, http.StatusCreated, &m)
+	return m, err
 }
 
 // UpdateMetric - Updates the metric of a service. Valid params keys and their purpose are as follows:
@@ -65,18 +58,12 @@ func (c *ThreeScaleClient) UpdateMetric(accessToken string, svcId string, id str
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return m, genRespErr("update metric", err.Error())
+		return m, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return m, genRespErr("update metric", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&m); err != nil {
-		return m, genRespErr("update metric", err.Error())
-	}
-	return m, nil
+	err = handleXMLResp(resp, http.StatusOK, &m)
+	return m, err
 }
 
 // DeleteMetric - Deletes the metric of a service.
@@ -95,14 +82,11 @@ func (c *ThreeScaleClient) DeleteMetric(accessToken string, svcId string, id str
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return genRespErr("delete metric", err.Error())
+		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return genRespErr("update metric", handleErrResp(resp))
-	}
-	return nil
+	return handleXMLResp(resp, http.StatusOK, nil)
 }
 
 // ListMetric - Returns the list of metrics of a service
@@ -123,18 +107,12 @@ func (c *ThreeScaleClient) ListMetrics(accessToken string, svcId string) (Metric
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return ml, genRespErr("create metric", err.Error())
+		return ml, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return ml, genRespErr("create metric", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&ml); err != nil {
-		return ml, genRespErr("create metric", err.Error())
-	}
-	return ml, nil
+	err = handleXMLResp(resp, http.StatusOK, &ml)
+	return ml, err
 }
 
 func genMetricCreateListEp(svcID string) string {

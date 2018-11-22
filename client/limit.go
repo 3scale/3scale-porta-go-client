@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -104,18 +103,12 @@ func (c *ThreeScaleClient) limitCreate(ep string, accessToken string, metricId s
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return apiResp, genRespErr("create limit", err.Error())
+		return apiResp, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		return apiResp, genRespErr("create limit", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return apiResp, genRespErr("create limit", err.Error())
-	}
-	return apiResp, nil
+	err = handleXMLResp(resp, http.StatusCreated, &apiResp)
+	return apiResp, err
 }
 
 func (c *ThreeScaleClient) updateLimit(ep string, accessToken string, p Params) (Limit, error) {
@@ -135,19 +128,12 @@ func (c *ThreeScaleClient) updateLimit(ep string, accessToken string, p Params) 
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return l, genRespErr("update limit", err.Error())
+		return l, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return l, genRespErr("update limit", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&l); err != nil {
-		return l, genRespErr("update limit", err.Error())
-	}
-	return l, nil
-
+	err = handleXMLResp(resp, http.StatusOK, &l)
+	return l, err
 }
 
 func (c *ThreeScaleClient) deleteLimit(ep string, accessToken string) error {
@@ -162,15 +148,11 @@ func (c *ThreeScaleClient) deleteLimit(ep string, accessToken string) error {
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return genRespErr("delete limit", err.Error())
+		return err
 	}
 
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return genRespErr("delete limit", handleErrResp(resp))
-	}
-	return nil
+	return handleXMLResp(resp, http.StatusCreated, nil)
 }
 
 // listLimits takes an endpoint and returns a list of limits
@@ -188,17 +170,10 @@ func (c *ThreeScaleClient) listLimits(ep string, accessToken string) (LimitList,
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return ml, genRespErr("list limits per plan", err.Error())
+		return ml, err
 	}
 
 	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		return ml, genRespErr("list limits per plan", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&ml); err != nil {
-		return ml, genRespErr("list limits per plan", err.Error())
-	}
-	return ml, nil
+	err = handleXMLResp(resp, http.StatusOK, &ml)
+	return ml, err
 }

@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -35,17 +34,11 @@ func (c *ThreeScaleClient) CreateMappingRule(
 	defer resp.Body.Close()
 
 	if err != nil {
-		return mr, genRespErr("mapping rule create", err.Error())
+		return mr, err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		return mr, genRespErr("mapping rule list", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&mr); err != nil {
-		return mr, genRespErr("mapping rule create", err.Error())
-	}
-	return mr, nil
+	err = handleXMLResp(resp, http.StatusCreated, &mr)
+	return mr, err
 }
 
 // UpdateMetric - Updates a Proxy Mapping Rule
@@ -76,17 +69,11 @@ func (c *ThreeScaleClient) UpdateMappingRule(accessToken string, svcId string, i
 	defer resp.Body.Close()
 
 	if err != nil {
-		return m, genRespErr("update mapping rule", err.Error())
+		return m, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return m, genRespErr("update mapping rule", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&m); err != nil {
-		return m, genRespErr("update mapping rule", err.Error())
-	}
-	return m, nil
+	err = handleXMLResp(resp, http.StatusOK, &m)
+	return m, err
 }
 
 // DeleteMappingRule - Deletes a Proxy Mapping Rule.
@@ -107,13 +94,10 @@ func (c *ThreeScaleClient) DeleteMappingRule(accessToken string, svcId string, i
 	defer resp.Body.Close()
 
 	if err != nil {
-		return genRespErr("delete mapping rule", err.Error())
+		return err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return genRespErr("delete mapping rule", handleErrResp(resp))
-	}
-	return nil
+	return handleXMLResp(resp, http.StatusOK, nil)
 }
 
 // ListMappingRule - List API for Mapping Rule endpoint
@@ -133,19 +117,12 @@ func (c *ThreeScaleClient) ListMappingRule(accessToken string, svcId string) (Ma
 	req.URL.RawQuery = values.Encode()
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return mrl, genRespErr("mapping rule list failed", err.Error())
+		return mrl, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return mrl, genRespErr("mapping rule list failed", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&mrl); err != nil {
-		return mrl, genRespErr("mapping rule list", err.Error())
-	}
-
-	return mrl, nil
+	err = handleXMLResp(resp, http.StatusOK, &mrl)
+	return mrl, err
 }
 
 func genMrEp(svcId string) string {

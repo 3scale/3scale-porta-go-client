@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -35,14 +34,12 @@ func (c *ThreeScaleClient) CreateAppPlan(accessToken string, svcId string, name 
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return apiResp, genRespErr("create application plan", err.Error())
+		return apiResp, err
 	}
 	defer resp.Body.Close()
 
-	if err := xml.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return apiResp, genRespErr("create application plan", err.Error())
-	}
-	return apiResp, nil
+	err = handleXMLResp(resp, http.StatusCreated, &apiResp)
+	return apiResp, err
 }
 
 // UpdateAppPlan - Updates an application plan
@@ -73,14 +70,11 @@ func (c *ThreeScaleClient) DeleteAppPlan(accessToken string, svcId string, appPl
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return genRespErr("Delete App", err.Error())
+		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return genRespErr("Delete limit", handleErrResp(resp))
-	}
-	return nil
+	return handleXMLResp(resp, http.StatusOK, nil)
 }
 
 // ListAppPlanByServiceId - Lists all application plans, filtering on service id
@@ -100,18 +94,12 @@ func (c *ThreeScaleClient) ListAppPlanByServiceId(accessToken string, svcId stri
 	req.URL.RawQuery = values.Encode()
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return appPlans, genRespErr("List Application Plans By Service:", err.Error())
+		return appPlans, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return appPlans, genRespErr("List Application Plans By Service:", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&appPlans); err != nil {
-		return appPlans, genRespErr("List Application Plans By Service:", err.Error())
-	}
-	return appPlans, nil
+	err = handleXMLResp(resp, http.StatusOK, &appPlans)
+	return appPlans, err
 }
 
 // ListAppPlan - List all application plans
@@ -130,18 +118,12 @@ func (c *ThreeScaleClient) ListAppPlan(accessToken string) (ApplicationPlansList
 	req.URL.RawQuery = values.Encode()
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return appPlans, genRespErr("List Application Plans By Service:", err.Error())
+		return appPlans, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return appPlans, genRespErr("List Application Plans By Service:", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&appPlans); err != nil {
-		return appPlans, genRespErr("List Application Plans By Service:", err.Error())
-	}
-	return appPlans, nil
+	err = handleXMLResp(resp, http.StatusOK, &appPlans)
+	return appPlans, err
 }
 
 // SetDefaultPlan - Makes the application plan the default one
@@ -163,12 +145,10 @@ func (c *ThreeScaleClient) updatePlan(endpoint string, accessToken string, value
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return apiResp, genRespErr("Update application plan", err.Error())
+		return apiResp, err
 	}
 	defer resp.Body.Close()
 
-	if err := xml.NewDecoder(resp.Body).Decode(&apiResp); err != nil {
-		return apiResp, genRespErr("Update application plan", err.Error())
-	}
-	return apiResp, nil
+	err = handleXMLResp(resp, http.StatusOK, &apiResp)
+	return apiResp, err
 }

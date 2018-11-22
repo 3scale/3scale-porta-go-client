@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -30,18 +29,12 @@ func (c *ThreeScaleClient) CreateService(accessToken string, name string) (Servi
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return s, genRespErr("create service", err.Error())
+		return s, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusCreated {
-		return s, genRespErr("create service", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&s); err != nil {
-		return s, genRespErr("create service", err.Error())
-	}
-	return s, nil
+	err = handleXMLResp(resp, http.StatusCreated, &s)
+	return s, err
 }
 
 // UpdateService - Update the service. Valid params keys and their purpose are as follows:
@@ -70,18 +63,12 @@ func (c *ThreeScaleClient) UpdateService(accessToken string, id string, params P
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return s, genRespErr("update service", err.Error())
+		return s, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return s, genRespErr("update service", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&s); err != nil {
-		return s, genRespErr("update service", err.Error())
-	}
-	return s, nil
+	err = handleXMLResp(resp, http.StatusOK, &s)
+	return s, err
 }
 
 // DeleteService - Delete the service.
@@ -100,14 +87,11 @@ func (c *ThreeScaleClient) DeleteService(accessToken string, id string) error {
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return genRespErr("delete service", err.Error())
+		return err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return genRespErr("delete service", handleErrResp(resp))
-	}
-	return nil
+	return handleXMLResp(resp, http.StatusOK, nil)
 }
 
 func (c *ThreeScaleClient) ListServices(accessToken string) (ServiceList, error) {
@@ -126,17 +110,10 @@ func (c *ThreeScaleClient) ListServices(accessToken string) (ServiceList, error)
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return sl, genRespErr("List Services:", err.Error())
+		return sl, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return sl, genRespErr("List Services:", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&sl); err != nil {
-		return sl, genRespErr("List Services:", err.Error())
-	}
-
-	return sl, nil
+	err = handleXMLResp(resp, http.StatusOK, &sl)
+	return sl, err
 }
