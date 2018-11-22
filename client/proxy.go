@@ -1,8 +1,6 @@
 package client
 
 import (
-	"encoding/json"
-	"encoding/xml"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -35,17 +33,11 @@ func (c *ThreeScaleClient) ReadProxy(accessToken string, svcID string) (Proxy, e
 	defer resp.Body.Close()
 
 	if err != nil {
-		return p, genRespErr("read proxy", err.Error())
+		return p, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return p, genRespErr("read proxy", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&p); err != nil {
-		return p, genRespErr("read proxy", err.Error())
-	}
-	return p, nil
+	err = handleXMLResp(resp, http.StatusOK, &p)
+	return p, err
 }
 
 // GetProxyConfig - Returns the Proxy Configs of a Service
@@ -83,17 +75,11 @@ func (c *ThreeScaleClient) UpdateProxy(accessToken string, svcId string, params 
 	defer resp.Body.Close()
 
 	if err != nil {
-		return p, genRespErr("update proxy", err.Error())
+		return p, err
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		return p, genRespErr("update proxy", handleErrResp(resp))
-	}
-
-	if err := xml.NewDecoder(resp.Body).Decode(&p); err != nil {
-		return p, genRespErr("update proxy", err.Error())
-	}
-	return p, nil
+	err = handleXMLResp(resp, http.StatusOK, &p)
+	return p, err
 }
 
 // ListProxyConfig - Returns the Proxy Configs of a Service
@@ -116,21 +102,11 @@ func (c *ThreeScaleClient) ListProxyConfig(accessToken string, svcId string, env
 	defer resp.Body.Close()
 
 	if err != nil {
-		return pc, genRespErr("list proxy configs", err.Error())
+		return pc, err
 	}
 
-	// TODO - Add some generic json handling
-	if resp.StatusCode != http.StatusOK {
-		return pc, fmt.Errorf("error calling list proxy config api - status %d", resp.StatusCode)
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&pc)
-	if err != nil {
-		return pc, fmt.Errorf("error decoding list proxy config json response - %s", err)
-	}
-
-	return pc, nil
+	err = handleJsonResp(resp, http.StatusOK, &pc)
+	return pc, err
 }
 
 // PromoteProxyConfig - Promotes a Proxy Config from one environment to another environment.
@@ -152,20 +128,11 @@ func (c *ThreeScaleClient) PromoteProxyConfig(accessToken string, svcId string, 
 	defer resp.Body.Close()
 
 	if err != nil {
-		return pe, genRespErr("proxy promote", err.Error())
+		return pe, err
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		return pe, fmt.Errorf("error calling proxy promote api - status %d", resp.StatusCode)
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&pe)
-	if err != nil {
-		return pe, fmt.Errorf("error decoding proxy config json response - %s", err)
-	}
-
-	return pe, nil
+	err = handleJsonResp(resp, http.StatusCreated, &pe)
+	return pe, err
 }
 
 func (c *ThreeScaleClient) getProxyConfig(token, endpoint string) (ProxyConfigElement, error) {
@@ -182,20 +149,10 @@ func (c *ThreeScaleClient) getProxyConfig(token, endpoint string) (ProxyConfigEl
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return pc, genRespErr("get latest proxy config", err.Error())
+		return pc, err
 	}
 	defer resp.Body.Close()
 
-	// TODO - Add some generic json handling
-	if resp.StatusCode != http.StatusOK {
-		return pc, fmt.Errorf("error calling get latest proxy config api - status %d", resp.StatusCode)
-	}
-
-	decoder := json.NewDecoder(resp.Body)
-	err = decoder.Decode(&pc)
-	if err != nil {
-		return pc, fmt.Errorf("error decoding latest proxy config json response - %s", err)
-	}
-
-	return pc, nil
+	err = handleJsonResp(resp, http.StatusOK, &pc)
+	return pc, err
 }

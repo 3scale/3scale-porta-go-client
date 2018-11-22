@@ -163,7 +163,7 @@ type ServiceList struct {
 }
 
 type ErrorResp struct {
-	XMLName xml.Name `xml:"errors"`
+	XMLName xml.Name `xml:"error"`
 	Text    string   `xml:",chardata"`
 	Error   struct {
 		Text string `xml:",chardata"`
@@ -307,3 +307,8 @@ type ProxyRule struct {
 }
 
 type Params map[string]string
+
+type ApiErr struct {
+	code int
+	err  string
+}
