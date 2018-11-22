@@ -1,7 +1,47 @@
 package fake
 
+import "fmt"
+
+func CreateApp(description string) string {
+	return fmt.Sprintf(`
+<?xml version="1.0" encoding="UTF-8"?>
+<application>
+  <id>7654321</id>
+  <created_at>2018-11-21T10:21:04Z</created_at>
+  <updated_at>2018-11-21T10:21:04Z</updated_at>
+  <state>live</state>
+  <user_account_id>1234567</user_account_id>
+  <first_traffic_at/>
+  <first_daily_traffic_at/>
+  <end_user_required>false</end_user_required>
+  <service_id>2555417759506</service_id>
+  <user_key>example-key-123-xyz</user_key>
+  <provider_verification_key>example-provider-key-123-xyz</provider_verification_key>
+  <plan custom="false" default="true">
+    <id>2357355954203</id>
+    <name>Basic</name>
+    <type>application_plan</type>
+    <state>published</state>
+    <service_id>54321</service_id>
+    <end_user_required>false</end_user_required>
+    <setup_fee>0.0</setup_fee>
+    <cost_per_month>0.0</cost_per_month>
+    <trial_period_days/>
+    <cancellation_period>0</cancellation_period>
+  </plan>
+  <name>example</name>
+  <description>%s</description>
+  <extra_fields></extra_fields>
+</application>`, description)
+}
+
+func CreateAppFail() string {
+	return `<?xml version="1.0" encoding="UTF-8"?>
+<error>Your access token does not have the correct permissions</error>`
+}
+
 func GetProxyConfigLatestJson() string {
-        return `{
+	return `{
  "proxy_config": {
   "id": 54321,
   "version": 2,
