@@ -4,6 +4,7 @@ package client
 // which is a subset of the Account Management API.
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"errors"
 	"fmt"
@@ -43,6 +44,14 @@ func NewThreeScale(backEnd *AdminPortal, httpClient *http.Client) *ThreeScaleCli
 func NewParams() Params {
 	params := make(map[string]string)
 	return params
+}
+
+func (e ApiErr) Error() string {
+	return fmt.Sprintf("error calling 3scale system - reason: %s - code: %d", e.err, e.code)
+}
+
+func (e ApiErr) Code() int {
+	return e.code
 }
 
 func (p Params) AddParam(key string, value string) {
@@ -105,6 +114,40 @@ func verifyUrl(urlToCheck string) (*url.URL, error) {
 	return url2, err
 }
 
+// handleXMLResp takes a http response and validates it against an expected status code
+// if response code is unexpected or it fails to decode into the interface provided
+// by the caller, an error of type ApiErr is returned
+func handleXMLResp(resp *http.Response, expectCode int, decodeInto interface{}) error {
+	if resp.StatusCode != expectCode {
+		return handleXMLErrResp(resp)
+	}
+
+	if decodeInto == nil {
+		return nil
+	}
+
+	if err := xml.NewDecoder(resp.Body).Decode(decodeInto); err != nil {
+		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
+
+	}
+	return nil
+}
+
+// handleJsonResp takes a http response and validates it against an expected status code
+// if response code is unexpected or it fails to decode into the interface provided
+// by the caller, an error of type ApiErr is returned
+func handleJsonResp(resp *http.Response, expectCode int, decodeInto interface{}) error {
+	if resp.StatusCode != expectCode {
+		return handleJsonErrResp(resp)
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(decodeInto); err != nil {
+		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
+	}
+
+	return nil
+}
+
 // Decodes and transforms an API response error into a string
 func handleErrResp(resp *http.Response) string {
 	var errResp ErrorResp
@@ -119,4 +162,44 @@ func handleErrResp(resp *http.Response) string {
 // Helper method to generate error message for client functions
 func genRespErr(ep string, err string) error {
 	return fmt.Errorf("error calling %s endpoint - %s", ep, err)
+}
+
+// handleXMLErrResp decodes an XML response from 3scale system
+// into an error of type ApiErr
+func handleXMLErrResp(resp *http.Response) error {
+	var errResp ErrorResp
+
+	if err := xml.NewDecoder(resp.Body).Decode(&errResp); err != nil {
+		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
+	}
+
+	return ApiErr{resp.StatusCode, errResp.Text}
+}
+
+// handleJsonErrResp decodes a JSON response from 3scale system
+// into an error of type APiErr
+func handleJsonErrResp(resp *http.Response) error {
+	var errMap map[string]string
+
+	if err := json.NewDecoder(resp.Body).Decode(&errMap); err != nil {
+		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
+	}
+
+	msg := "error"
+	for _, v := range errMap {
+		msg = fmt.Sprintf("%s - %s ", msg, v)
+	}
+
+	return createApiErr(resp.StatusCode, msg)
+}
+
+func createApiErr(statusCode int, message string) ApiErr {
+	return ApiErr{
+		code: statusCode,
+		err:  message,
+	}
+}
+
+func createDecodingErrorMessage(err error) string {
+	return fmt.Sprintf("decoding error - %s", err.Error())
 }
