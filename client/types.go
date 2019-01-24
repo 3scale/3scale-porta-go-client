@@ -150,6 +150,8 @@ type Service struct {
 	ID                          string     `xml:"id"`
 	AccountID                   string     `xml:"account_id"`
 	Name                        string     `xml:"name"`
+	Description                 string     `xml:"description"`
+	DeploymentOption            string     `xml:"deployment_option"`
 	State                       string     `xml:"state"`
 	SystemName                  string     `xml:"system_name"`
 	BackendVersion              string     `xml:"backend_version"`
