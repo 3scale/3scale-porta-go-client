@@ -144,6 +144,7 @@ type Proxy struct {
 	CreatedAt               string   `xml:"created_at"`
 	UpdatedAt               string   `xml:"updated_at"`
 	LockVersion             string   `xml:"lock_version"`
+	OidcIssuerEndpoint      string   `xml:"oidc_issuer_endpoint"`
 }
 
 type Service struct {
