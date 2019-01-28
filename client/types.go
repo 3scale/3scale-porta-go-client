@@ -312,3 +312,27 @@ type ApiErr struct {
 	code int
 	err  string
 }
+
+type User struct {
+	ID       string `xml:"id"`
+	State    string `xml:"state"`
+	UserName string `xml:"username"`
+}
+
+type UserList struct {
+	XMLName xml.Name `xml:"users"`
+	Users   []User   `xml:"user"`
+}
+
+type Account struct {
+	ID           string   `xml:"id"`
+	State        string   `xml:"state"`
+	OrgName      string   `xml:"org_name"`
+	SupportEmail string   `xml:"support_email"`
+	Users        UserList `xml:"users"`
+}
+
+type AccountList struct {
+	XMLName  xml.Name  `xml:"accounts"`
+	Accounts []Account `xml:"account"`
+}
