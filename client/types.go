@@ -314,9 +314,11 @@ type ApiErr struct {
 }
 
 type User struct {
-	ID       string `xml:"id"`
-	State    string `xml:"state"`
-	UserName string `xml:"username"`
+	ID        string `xml:"id"`
+	State     string `xml:"state"`
+	UserName  string `xml:"username"`
+	Email     string `xml:"email"`
+	AccountID string `xml:"account_id"`
 }
 
 type UserList struct {
@@ -335,4 +337,18 @@ type Account struct {
 type AccountList struct {
 	XMLName  xml.Name  `xml:"accounts"`
 	Accounts []Account `xml:"account"`
+}
+
+type AccessToken struct {
+	ID         string `xml:"id"`
+	Name       string `xml:"name"`
+	Scopes     string `xml:"scopes"`
+	Permission string `xml:"permission"`
+	Value      string `xml:"value"`
+}
+
+type Signup struct {
+	XMLName     xml.Name    `xml:"signup"`
+	Account     Account     `xml:"account"`
+	AccessToken AccessToken `xml:"access_token"`
 }
