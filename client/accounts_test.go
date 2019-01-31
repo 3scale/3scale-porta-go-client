@@ -62,15 +62,6 @@ func TestListAccountsErrors(t *testing.T) {
 	for _, tt := range errorTests {
 		t.Run(tt.Name, func(subTest *testing.T) {
 			httpClient := NewTestClient(func(req *http.Request) *http.Response {
-				if req.Method != http.MethodGet {
-					subTest.Fatalf("wrong helper called for account list api")
-				}
-
-				q := req.URL.Query()
-				if q.Get("access_token") != access_token {
-					subTest.Fatalf("Expected access token not found")
-				}
-
 				bodyReader := bytes.NewReader(helperLoadBytes(subTest, tt.ResponseBodyFixture))
 
 				return &http.Response{
