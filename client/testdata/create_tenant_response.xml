@@ -1,0 +1,86 @@
+<signup>
+  <account>
+    <id>14</id>
+    <created_at>2019-01-30T11:21:11Z</created_at>
+    <updated_at>2019-01-30T11:21:13Z</updated_at>
+    <state>approved</state>
+    <admin_domain>corp10-admin.amp24.127.0.0.1.nip.io</admin_domain>
+    <domain>corp10.amp24.127.0.0.1.nip.io</domain>
+    <from_email>no-reply@amp24.127.0.0.1.nip.io</from_email>
+    <support_email>someEmail@example.com</support_email>
+    <finance_support_email>someEmail@example.com</finance_support_email>
+    <site_access_code>f1dfb24a1e</site_access_code>
+    <org_name>someOrgName</org_name>
+    <extra_fields/>
+    <monthly_billing_enabled>true</monthly_billing_enabled>
+    <monthly_charging_enabled>true</monthly_charging_enabled>
+    <credit_card_stored>false</credit_card_stored>
+    <plans>
+      <plan default="true">
+        <id>1</id>
+        <name>Default</name>
+        <type>service_plan</type>
+        <state>published</state>
+        <service_id>1</service_id>
+        <approval_required>false</approval_required>
+        <setup_fee>0.0</setup_fee>
+        <cost_per_month>0.0</cost_per_month>
+        <trial_period_days/>
+        <cancellation_period>0</cancellation_period>
+      </plan>
+      <plan default="true">
+        <id>3</id>
+        <name>Default account plan</name>
+        <type>account_plan</type>
+        <state>hidden</state>
+        <setup_fee>0.0</setup_fee>
+        <cost_per_month>0.0</cost_per_month>
+        <trial_period_days/>
+        <cancellation_period>0</cancellation_period>
+      </plan>
+      <plan custom="false" default="true">
+        <id>4</id>
+        <name>enterprise</name>
+        <type>application_plan</type>
+        <state>hidden</state>
+        <service_id>1</service_id>
+        <end_user_required>false</end_user_required>
+        <setup_fee>0.0</setup_fee>
+        <cost_per_month>0.0</cost_per_month>
+        <trial_period_days/>
+        <cancellation_period>0</cancellation_period>
+      </plan>
+    </plans>
+    <users>
+      <user>
+        <id>20</id>
+        <created_at>2019-01-30T11:21:11Z</created_at>
+        <updated_at>2019-01-30T11:21:11Z</updated_at>
+        <account_id>14</account_id>
+        <state>pending</state>
+        <role>admin</role>
+        <username>admin</username>
+        <email>cort10admin@redhat.com</email>
+        <extra_fields/>
+      </user>
+      <user>
+        <id>21</id>
+        <created_at>2019-01-30T11:21:11Z</created_at>
+        <updated_at>2019-01-30T11:21:11Z</updated_at>
+        <account_id>14</account_id>
+        <state>active</state>
+        <role>admin</role>
+        <username>3scaleadmin</username>
+        <email>3scaleadmin+corp10-admin.amp24.127.0.0.1.nip.io@3scale.net</email>
+        <extra_fields/>
+      </user>
+    </users>
+  </account>
+  <access_token>
+    <id>20</id>
+    <name>account management rw</name>
+    <scopes>["account_management"]</scopes>
+    <permission>rw</permission>
+    <value>819651ea6a31286bd0eecb42ebc5326bf41e77c2e2417d2cce8a2f18e297f4fa</value>
+  </access_token>
+</signup>
