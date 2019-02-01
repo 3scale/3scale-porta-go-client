@@ -7,4 +7,4 @@ help: Makefile
 
 ## test: Run unit tests
 test:
-	go test -v $(PACKAGE_CLIENT)
+	go test -v $(PACKAGE_CLIENT) -test.coverprofile="coverage.txt"
