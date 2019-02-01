@@ -1,0 +1,17 @@
+version: 2 
+jobs: 
+  build:
+    docker:
+      - image: circleci/golang:1.11
+        environment:
+          SOURCE: /go/src/github.com/3scale/3scale-porta-go-client      
+
+    working_directory: /go/src/github.com/3scale/3scale-porta-go-client
+    steps: 
+      - checkout
+
+      - run:
+          name: Run unit tests
+          command: |
+            make test
+

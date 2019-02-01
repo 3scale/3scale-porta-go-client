@@ -5,6 +5,6 @@ PACKAGE_CLIENT = github.com/3scale/3scale-porta-go-client/client
 help: Makefile
 	@sed -n 's/^##//p' $<
 
-## test: Run tests
+## test: Run unit tests
 test:
 	go test -v $(PACKAGE_CLIENT)
