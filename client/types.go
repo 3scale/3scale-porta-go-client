@@ -111,6 +111,7 @@ type Plan struct {
 	State              string   `xml:"state"`
 	ServiceID          string   `xml:"service_id"`
 	EndUserRequired    string   `xml:"end_user_required"`
+	ApprovalRequired   string   `xml:"approval_required"`
 	SetupFee           string   `xml:"setup_fee"`
 	CostPerMonth       string   `xml:"cost_per_month"`
 	TrialPeriodDays    string   `xml:"trial_period_days"`
