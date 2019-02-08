@@ -43,7 +43,7 @@ func (c *ThreeScaleClient) CreateAppPlan(accessToken string, svcId string, name 
 }
 
 // UpdateAppPlan - Updates an application plan
-func (c *ThreeScaleClient) UpdateAppPlan(accessToken string, svcId string, appPlanId string, name string, stateEvent string) (Plan, error) {
+func (c *ThreeScaleClient) UpdateAppPlan(accessToken string, svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
 	values := url.Values{}
@@ -51,6 +51,9 @@ func (c *ThreeScaleClient) UpdateAppPlan(accessToken string, svcId string, appPl
 	values.Add("service_id", svcId)
 	values.Add("name", name)
 	values.Add("state_event", stateEvent)
+	for k, v := range params {
+		values.Add(k, v)
+	}
 
 	return c.updatePlan(endpoint, accessToken, values)
 }
