@@ -313,11 +313,6 @@ type ProxyRule struct {
 
 type Params map[string]string
 
-type ApiErr struct {
-	code int
-	err  string
-}
-
 type User struct {
 	ID        int64  `json:"id"`
 	State     string `json:"state"`

@@ -47,14 +47,6 @@ func NewParams() Params {
 	return params
 }
 
-func (e ApiErr) Error() string {
-	return fmt.Sprintf("error calling 3scale system - reason: %s - code: %d", e.err, e.code)
-}
-
-func (e ApiErr) Code() int {
-	return e.code
-}
-
 func (p Params) AddParam(key string, value string) {
 	p[key] = value
 }
