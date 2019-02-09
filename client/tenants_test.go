@@ -40,7 +40,7 @@ func TestCreateTenantOk(t *testing.T) {
 			}
 		}
 
-		bodyReader := bytes.NewReader(helperLoadBytes(t, "create_tenant_response.xml"))
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "create_tenant_response.json"))
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Body:       ioutil.NopCloser(bodyReader),
@@ -59,12 +59,12 @@ func TestCreateTenantOk(t *testing.T) {
 		t.Fatalf("signup not parsed")
 	}
 
-	if signup.Account.SupportEmail != email {
-		t.Fatalf("Email: expected (%s) found (%s)", email, signup.Account.SupportEmail)
+	if signup.Signup.Account.SupportEmail != email {
+		t.Fatalf("Email: expected (%s) found (%s)", email, signup.Signup.Account.SupportEmail)
 	}
 
-	if signup.Account.OrgName != orgName {
-		t.Fatalf("OrgName: expected (%s) found (%s)", orgName, signup.Account.OrgName)
+	if signup.Signup.Account.OrgName != orgName {
+		t.Fatalf("OrgName: expected (%s) found (%s)", orgName, signup.Signup.Account.OrgName)
 	}
 }
 
@@ -78,15 +78,11 @@ func TestCreateTenantErrors(t *testing.T) {
 		Name                string
 		ResponseBodyFixture string
 		ExpectedErrorMsg    string
-		ErrorMsg            string
 		HTTPStatusCode      int
 	}{
-		{"BadSyntaxTest", "accounts_wrong_format_fixture.xml",
-			"XML syntax error", "expected error type is XML syntax error", 201},
-		{"DecodingErrorTest", "accounts_json_format_fixture.json",
-			"decoding error", "expected error type is decoding error", 201},
-		{"UnexpectedHTTPStatusCode", "error_response_fixture.xml",
-			"Test Error", "expected error type is HTTP status error", 200},
+		{"CorruptedJsonErrorTest", "accounts_wrong_format_fixture.json", "decoding error - unexpected EOF", 201},
+		{"WrongFormatErrorTest", "xml_format_fixture.xml", "decoding error - invalid character", 201},
+		{"UnexpectedHTTPStatusCode", "error_response_fixture.json", "Test Error", 400},
 	}
 
 	for _, tt := range errorTests {
@@ -112,7 +108,7 @@ func TestCreateTenantErrors(t *testing.T) {
 			}
 
 			if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
-				subTest.Fatalf("got: %s, expected: %s", apiError.Error(), tt.ErrorMsg)
+				subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
 			}
 		})
 	}

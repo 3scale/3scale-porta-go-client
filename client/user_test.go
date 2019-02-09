@@ -33,7 +33,7 @@ func TestActivateUserOk(t *testing.T) {
 			t.Fatalf("Invalid authorization header value, expected %s got %s", expectedAuth, auth[1])
 		}
 
-		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.xml"))
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.json"))
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bodyReader),
@@ -57,11 +57,10 @@ func TestActivateUserErrors(t *testing.T) {
 		Name                string
 		ResponseBodyFixture string
 		ExpectedErrorMsg    string
-		ErrorMsg            string
 		HTTPStatusCode      int
 	}{
-		{"UnexpectedHTTPStatusCode", "error_response_fixture.xml",
-			"Test Error", "expected error type is HTTP status error", 404},
+		{"UnexpectedHTTPStatusCode", "error_response_fixture.json",
+			"Test Error", 400},
 	}
 
 	for _, tt := range errorTests {
@@ -87,7 +86,7 @@ func TestActivateUserErrors(t *testing.T) {
 			}
 
 			if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
-				subTest.Fatalf("got: %s, expected: %s", apiError.Error(), tt.ErrorMsg)
+				subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
 			}
 		})
 	}

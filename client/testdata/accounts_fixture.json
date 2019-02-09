@@ -1,0 +1,122 @@
+{
+  "accounts": [
+    {
+      "account": {
+        "id": 1,
+        "created_at": "2019-01-31T08:20:44Z",
+        "updated_at": "2019-01-31T08:20:45Z",
+        "admin_domain": "master.amp24.127.0.0.1.nip.io",
+        "domain": "master.amp24.127.0.0.1.nip.io",
+        "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+        "site_access_code": "",
+        "credit_card_stored": false,
+        "monthly_billing_enabled": true,
+        "monthly_charging_enabled": true,
+        "state": "approved",
+        "links": [
+          {
+            "rel": "users",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/1/users"
+          }
+        ],
+        "org_name": "Master Account"
+      }
+    },
+    {
+      "account": {
+        "id": 2,
+        "created_at": "2019-01-31T08:20:45Z",
+        "updated_at": "2019-01-31T08:23:31Z",
+        "admin_domain": "3scale-admin.amp24.127.0.0.1.nip.io",
+        "domain": "3scale.amp24.127.0.0.1.nip.io",
+        "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+        "support_email": "admin@3scale.amp24.127.0.0.1.nip.io",
+        "finance_support_email": "admin@3scale.amp24.127.0.0.1.nip.io",
+        "site_access_code": "b43538b6ad",
+        "credit_card_stored": false,
+        "monthly_billing_enabled": true,
+        "monthly_charging_enabled": true,
+        "state": "approved",
+        "links": [
+          {
+            "rel": "users",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/2/users"
+          }
+        ],
+        "org_name": "Provider Name"
+      }
+    },
+    {
+      "account": {
+        "id": 4,
+        "created_at": "2019-01-31T08:30:43Z",
+        "updated_at": "2019-01-31T08:31:23Z",
+        "admin_domain": "corp01-admin.amp24.127.0.0.1.nip.io",
+        "domain": "corp01.amp24.127.0.0.1.nip.io",
+        "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+        "support_email": "admin@corp01.com",
+        "finance_support_email": "admin@corp01.com",
+        "site_access_code": "6200909b73",
+        "credit_card_stored": false,
+        "monthly_billing_enabled": true,
+        "monthly_charging_enabled": true,
+        "state": "approved",
+        "links": [
+          {
+            "rel": "users",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/4/users"
+          }
+        ],
+        "org_name": "Corp01"
+      }
+    },
+    {
+      "account": {
+        "id": 6,
+        "created_at": "2019-01-31T16:05:39Z",
+        "updated_at": "2019-01-31T16:06:18Z",
+        "admin_domain": "corp02-admin.amp24.127.0.0.1.nip.io",
+        "domain": "corp02.amp24.127.0.0.1.nip.io",
+        "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+        "support_email": "admin2@redhat.com",
+        "finance_support_email": "admin2@redhat.com",
+        "site_access_code": "bc75fd115d",
+        "credit_card_stored": false,
+        "monthly_billing_enabled": true,
+        "monthly_charging_enabled": true,
+        "state": "approved",
+        "links": [
+          {
+            "rel": "users",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/6/users"
+          }
+        ],
+        "org_name": "Corp02"
+      }
+    },
+    {
+      "account": {
+        "id": 8,
+        "created_at": "2019-01-31T16:20:24Z",
+        "updated_at": "2019-01-31T16:20:52Z",
+        "admin_domain": "corp023-admin.amp24.127.0.0.1.nip.io",
+        "domain": "corp023.amp24.127.0.0.1.nip.io",
+        "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+        "support_email": "admin3@redhat.com",
+        "finance_support_email": "admin3@redhat.com",
+        "site_access_code": "80fcb44618",
+        "credit_card_stored": false,
+        "monthly_billing_enabled": true,
+        "monthly_charging_enabled": true,
+        "state": "approved",
+        "links": [
+          {
+            "rel": "users",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/8/users"
+          }
+        ],
+        "org_name": "Corp023"
+      }
+    }
+  ]
+}

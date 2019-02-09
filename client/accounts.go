@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	accountList = "/admin/api/accounts.xml"
+	accountList = "/admin/api/accounts.json"
 )
 
 func (c *ThreeScaleClient) ListAccounts() (*AccountList, error) {
@@ -25,6 +25,6 @@ func (c *ThreeScaleClient) ListAccounts() (*AccountList, error) {
 	defer resp.Body.Close()
 
 	accountList := &AccountList{}
-	err = handleXMLResp(resp, http.StatusOK, accountList)
+	err = handleJsonResp(resp, http.StatusOK, accountList)
 	return accountList, err
 }

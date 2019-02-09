@@ -1,0 +1,35 @@
+{
+  "signup": {
+    "account": {
+      "id": 48,
+      "created_at": "2019-02-08T18:20:58Z",
+      "updated_at": "2019-02-08T18:20:59Z",
+      "admin_domain": "some-corp-6-admin.amp24.127.0.0.1.nip.io",
+      "domain": "some-corp-6.amp24.127.0.0.1.nip.io",
+      "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+      "support_email": "someEmail@example.com",
+      "finance_support_email": "someEmail@example.com",
+      "site_access_code": "6d4a5fa0cd",
+      "credit_card_stored": false,
+      "monthly_billing_enabled": true,
+      "monthly_charging_enabled": true,
+      "state": "approved",
+      "links": [
+        {
+          "rel": "users",
+          "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/48/users"
+        }
+      ],
+      "org_name": "someOrgName"
+    },
+    "access_token": {
+      "id": 53,
+      "name": "account management rw",
+      "scopes": [
+        "account_management"
+      ],
+      "permission": "rw",
+      "value": "9aac6a6e2e7a5837603aea9406ace278184a3016107c22481ffe18d7c9e8417d"
+    }
+  }
+}

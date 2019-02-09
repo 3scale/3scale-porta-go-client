@@ -7,11 +7,11 @@ import (
 )
 
 const (
-	tenantCreate = "/master/api/providers.xml"
+	tenantCreate = "/master/api/providers.json"
 )
 
 // CreateTenant creates new tenant using 3scale API
-func (c *ThreeScaleClient) CreateTenant(orgName, username, email, password string) (*Signup, error) {
+func (c *ThreeScaleClient) CreateTenant(orgName, username, email, password string) (*Tenant, error) {
 	values := url.Values{}
 	values.Add("org_name", orgName)
 	values.Add("username", username)
@@ -30,7 +30,7 @@ func (c *ThreeScaleClient) CreateTenant(orgName, username, email, password strin
 	}
 	defer resp.Body.Close()
 
-	signup := &Signup{}
-	err = handleXMLResp(resp, http.StatusCreated, signup)
-	return signup, err
+	tenant := &Tenant{}
+	err = handleJsonResp(resp, http.StatusCreated, tenant)
+	return tenant, err
 }

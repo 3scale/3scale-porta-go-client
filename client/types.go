@@ -319,41 +319,41 @@ type ApiErr struct {
 }
 
 type User struct {
-	ID        string `xml:"id"`
-	State     string `xml:"state"`
-	UserName  string `xml:"username"`
-	Email     string `xml:"email"`
-	AccountID string `xml:"account_id"`
-}
-
-type UserList struct {
-	XMLName xml.Name `xml:"users"`
-	Users   []User   `xml:"user"`
+	ID        int64  `json:"id"`
+	State     string `json:"state"`
+	UserName  string `json:"username"`
+	Email     string `json:"email"`
+	AccountID string `json:"account_id"`
 }
 
 type Account struct {
-	ID           string   `xml:"id"`
-	State        string   `xml:"state"`
-	OrgName      string   `xml:"org_name"`
-	SupportEmail string   `xml:"support_email"`
-	Users        UserList `xml:"users"`
+	ID           int64  `json:"id"`
+	State        string `json:"state"`
+	OrgName      string `json:"org_name"`
+	SupportEmail string `json:"support_email"`
+}
+
+type AccountElem struct {
+	Account Account `json:"account"`
 }
 
 type AccountList struct {
-	XMLName  xml.Name  `xml:"accounts"`
-	Accounts []Account `xml:"account"`
+	Accounts []AccountElem `json:"accounts"`
 }
 
 type AccessToken struct {
-	ID         string `xml:"id"`
-	Name       string `xml:"name"`
-	Scopes     string `xml:"scopes"`
-	Permission string `xml:"permission"`
-	Value      string `xml:"value"`
+	ID         int64    `json:"id"`
+	Name       string   `json:"name"`
+	Scopes     []string `json:"scopes"`
+	Permission string   `json:"permission"`
+	Value      string   `json:"value"`
 }
 
 type Signup struct {
-	XMLName     xml.Name    `xml:"signup"`
-	Account     Account     `xml:"account"`
-	AccessToken AccessToken `xml:"access_token"`
+	Account     Account     `json:"account"`
+	AccessToken AccessToken `json:"access_token"`
+}
+
+type Tenant struct {
+	Signup Signup `json:"signup"`
 }
