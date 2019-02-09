@@ -3,6 +3,7 @@ package client
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -257,4 +258,64 @@ func TestUpdateTenantErrors(t *testing.T) {
 		return err
 	}
 	helperClientError(t, op)
+}
+
+func TestDeleteTenant(t *testing.T) {
+	accessToken := "someAccessToken"
+	tenantID := int64(42)
+	tests := []struct {
+		Name             string
+		ErrorExpected    bool
+		ExpectedErrorMsg string
+		HTTPStatusCode   int
+		BodyReader       io.Reader
+	}{
+		{"HappyPathTest", false, "", 200, strings.NewReader("")},
+		{"UnexpectedHTTPStatusCode", true, "Test Error", 400, strings.NewReader(`{"error": "Test Error"}`)},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.Name, func(subTest *testing.T) {
+			httpClient := NewTestClient(func(req *http.Request) *http.Response {
+				if req.Method != http.MethodDelete {
+					subTest.Fatalf("wrong http method called for create tenant endpoint")
+				}
+
+				p := req.URL.Path
+				if p != fmt.Sprintf(tenantRead, tenantID) {
+					subTest.Fatalf("Path: expected (%s) found (%s)", fmt.Sprintf(tenantRead, tenantID), p)
+				}
+
+				// http library does not parse body when method is DELETE
+				// cannot read request body
+
+				return &http.Response{
+					StatusCode: tt.HTTPStatusCode,
+					Body:       ioutil.NopCloser(tt.BodyReader),
+					Header:     make(http.Header),
+				}
+			})
+			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+			err := c.DeleteTenant(accessToken, tenantID)
+
+			if tt.ErrorExpected {
+				if err == nil {
+					subTest.Fatalf("client did not return error")
+				}
+				apiError, ok := err.(ApiErr)
+				if !ok {
+					subTest.Fatalf("expected ApiErr error type")
+				}
+
+				if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
+					subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
+			}
+
+		})
+	}
 }

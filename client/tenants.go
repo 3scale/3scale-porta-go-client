@@ -61,7 +61,7 @@ func (c *ThreeScaleClient) ShowTenant(accessToken string, tenantID int64) (*Tena
 	return tenant, err
 }
 
-// UpdateTenant - Returns tenant info for the specified ID
+// UpdateTenant - Updates tenant info for the specified ID
 func (c *ThreeScaleClient) UpdateTenant(accessToken string, tenantID int64, params Params) (*Tenant, error) {
 	endpoint := fmt.Sprintf(tenantUpdate, tenantID)
 
@@ -85,4 +85,30 @@ func (c *ThreeScaleClient) UpdateTenant(accessToken string, tenantID int64, para
 	tenant := &Tenant{}
 	err = handleJsonResp(resp, http.StatusOK, tenant)
 	return tenant, err
+}
+
+// DeleteTenant - Schedules a tenant account to be permanently deleted in X days (check Porta doc)
+func (c *ThreeScaleClient) DeleteTenant(accessToken string, tenantID int64) error {
+	endpoint := fmt.Sprintf(tenantUpdate, tenantID)
+
+	values := url.Values{}
+	values.Add("access_token", accessToken)
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildDeleteReq(endpoint, body)
+	if err != nil {
+		return httpReqError
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return handleJsonErrResp(resp)
+	}
+
+	return nil
 }
