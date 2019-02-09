@@ -10,6 +10,7 @@ import (
 const (
 	tenantCreate = "/master/api/providers.json"
 	tenantRead   = "/master/api/providers/%d.json"
+	tenantUpdate = "/master/api/providers/%d.json"
 )
 
 // CreateTenant creates new tenant using 3scale API
@@ -48,6 +49,32 @@ func (c *ThreeScaleClient) ShowTenant(accessToken string, tenantID int64) (*Tena
 	values := url.Values{}
 	values.Add("access_token", accessToken)
 	req.URL.RawQuery = values.Encode()
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	tenant := &Tenant{}
+	err = handleJsonResp(resp, http.StatusOK, tenant)
+	return tenant, err
+}
+
+// UpdateTenant - Returns tenant info for the specified ID
+func (c *ThreeScaleClient) UpdateTenant(accessToken string, tenantID int64, params Params) (*Tenant, error) {
+	endpoint := fmt.Sprintf(tenantUpdate, tenantID)
+
+	values := url.Values{}
+	values.Add("access_token", accessToken)
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPutReq(endpoint, body)
+	if err != nil {
+		return nil, httpReqError
+	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
