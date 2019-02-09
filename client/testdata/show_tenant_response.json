@@ -1,0 +1,26 @@
+{
+  "signup": {
+    "account": {
+      "id": 42,
+      "created_at": "2019-02-01T17:29:29Z",
+      "updated_at": "2019-02-01T17:30:07Z",
+      "admin_domain": "corp24-admin.amp24.127.0.0.1.nip.io",
+      "domain": "corp24.amp24.127.0.0.1.nip.io",
+      "from_email": "no-reply@amp24.127.0.0.1.nip.io",
+      "support_email": "admin@corp24.com",
+      "finance_support_email": "admin@corp24.com",
+      "site_access_code": "5fe935046b",
+      "credit_card_stored": false,
+      "monthly_billing_enabled": true,
+      "monthly_charging_enabled": true,
+      "state": "approved",
+      "links": [
+        {
+          "rel": "users",
+          "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/42/users"
+        }
+      ],
+      "org_name": "Corp24"
+    }
+  }
+}
