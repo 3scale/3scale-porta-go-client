@@ -327,7 +327,15 @@ type User struct {
 	State     string `json:"state"`
 	UserName  string `json:"username"`
 	Email     string `json:"email"`
-	AccountID string `json:"account_id"`
+	AccountID int64  `json:"account_id"`
+}
+
+type UserElem struct {
+	User User `json:"user"`
+}
+
+type UserList struct {
+	Users []UserElem `json:"users"`
 }
 
 type Account struct {

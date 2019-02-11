@@ -1,14 +1,14 @@
 {
   "user": {
-    "id": 68,
+    "id": 74,
     "state": "active",
     "role": "admin",
-    "created_at": "2019-02-08T18:19:47Z",
-    "updated_at": "2019-02-09T14:06:38Z",
+    "created_at": "2019-02-08T18:23:04Z",
+    "updated_at": "2019-02-11T15:57:14Z",
     "links": [
       {
         "rel": "self",
-        "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/users.68"
+        "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/users.74"
       }
     ],
     "username": "admin",
