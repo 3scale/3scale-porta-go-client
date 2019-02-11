@@ -8,13 +8,14 @@ import (
 )
 
 const (
-	appCreate = "/admin/api/accounts/%s/applications.xml"
+	appCreate = "/admin/api/accounts/%s/applications.json"
+	appList   = "/admin/api/accounts/%d/applications.json"
 )
 
 // CreateApp - Create an application.
 // The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
 func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name string, description string) (Application, error) {
-	var apiResp Application
+	var app Application
 	endpoint := fmt.Sprintf(appCreate, accountId)
 
 	values := url.Values{}
@@ -26,15 +27,43 @@ func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name strin
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPostReq(endpoint, body)
 	if err != nil {
-		return apiResp, httpReqError
+		return app, httpReqError
 	}
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
-		return apiResp, err
+		return app, err
 	}
 	defer resp.Body.Close()
 
-	err = handleXMLResp(resp, http.StatusCreated, &apiResp)
-	return apiResp, err
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusCreated, apiResp)
+	if err != nil {
+		return app, err
+	}
+	return apiResp.Application, nil
+}
+
+// ListApplications - List of applications for a given account.
+func (c *ThreeScaleClient) ListApplications(accessToken string, accountID int64) (*ApplicationList, error) {
+	endpoint := fmt.Sprintf(appList, accountID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	urlValues := url.Values{}
+	urlValues.Add("access_token", accessToken)
+
+	req.URL.RawQuery = urlValues.Encode()
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	applicationList := &ApplicationList{}
+	err = handleJsonResp(resp, http.StatusOK, applicationList)
+	return applicationList, err
 }

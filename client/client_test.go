@@ -37,7 +37,7 @@ func TestHandleJsonResp(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error not nil")
 	}
-	if err.Error() != "error calling 3scale system - reason: error - invalid environment  - code: 400" {
+	if err.Error() != "error calling 3scale system - reason: error - invalid environment - code: 400" {
 		t.Fatal("unexpected decoding or error message")
 	}
 
