@@ -10,7 +10,7 @@ import (
 
 func TestCreateApp(t *testing.T) {
 	const (
-		accessToken = "123"
+		credential  = "123"
 		accountID   = "321"
 		planID      = "abc"
 		name        = "test"
@@ -51,7 +51,7 @@ func TestCreateApp(t *testing.T) {
 		c := NewThreeScale(NewTestAdminPortal(t), httpClient)
 
 		t.Run(input.name, func(t *testing.T) {
-			a, b := c.CreateApp(accessToken, accountID, planID, name, input.name)
+			a, b := c.CreateApp(credential, accountID, planID, name, input.name)
 			if input.returnErr {
 				e := b.(ApiErr)
 				if e.Code() != http.StatusForbidden {

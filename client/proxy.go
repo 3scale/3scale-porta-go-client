@@ -16,17 +16,16 @@ const (
 )
 
 // ReadProxy - Returns the Proxy for a specific Service.
-func (c *ThreeScaleClient) ReadProxy(accessToken string, svcID string) (Proxy, error) {
+func (c *ThreeScaleClient) ReadProxy(credential string, svcID string) (Proxy, error) {
 	var p Proxy
 
 	endpoint := fmt.Sprintf(proxyGetUpdate, svcID)
-	req, err := c.buildGetReq(endpoint)
+	req, err := c.buildGetReq(endpoint, credential)
 	if err != nil {
 		return p, httpReqError
 	}
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
@@ -41,32 +40,31 @@ func (c *ThreeScaleClient) ReadProxy(accessToken string, svcID string) (Proxy, e
 }
 
 // GetProxyConfig - Returns the Proxy Configs of a Service
-func (c *ThreeScaleClient) GetProxyConfig(accessToken string, svcId string, env string, version string) (ProxyConfigElement, error) {
+func (c *ThreeScaleClient) GetProxyConfig(credential string, svcId string, env string, version string) (ProxyConfigElement, error) {
 	endpoint := fmt.Sprintf(proxyConfigGet, svcId, env, version)
-	return c.getProxyConfig(accessToken, endpoint)
+	return c.getProxyConfig(credential, endpoint)
 }
 
 // GetLatestProxyConfig - Returns the latest Proxy Config
-func (c *ThreeScaleClient) GetLatestProxyConfig(accessToken string, svcId string, env string) (ProxyConfigElement, error) {
+func (c *ThreeScaleClient) GetLatestProxyConfig(credential string, svcId string, env string) (ProxyConfigElement, error) {
 	endpoint := fmt.Sprintf(proxyConfigLatestGet, svcId, env)
-	return c.getProxyConfig(accessToken, endpoint)
+	return c.getProxyConfig(credential, endpoint)
 }
 
 // UpdateProxy - Changes the Proxy settings.
 // This will create a new APIcast configuration version for the Staging environment with the updated settings.
-func (c *ThreeScaleClient) UpdateProxy(accessToken string, svcId string, params Params) (Proxy, error) {
+func (c *ThreeScaleClient) UpdateProxy(credential string, svcId string, params Params) (Proxy, error) {
 	var p Proxy
 
 	endpoint := fmt.Sprintf(proxyGetUpdate, svcId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	for k, v := range params {
 		values.Add(k, v)
 	}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildUpdateReq(endpoint, body)
+	req, err := c.buildUpdateReq(endpoint, credential, body)
 	if err != nil {
 		return p, httpReqError
 	}
@@ -84,18 +82,17 @@ func (c *ThreeScaleClient) UpdateProxy(accessToken string, svcId string, params 
 
 // ListProxyConfig - Returns the Proxy Configs of a Service
 // env parameter should be one of 'sandbox', 'production'
-func (c *ThreeScaleClient) ListProxyConfig(accessToken string, svcId string, env string) (ProxyConfigList, error) {
+func (c *ThreeScaleClient) ListProxyConfig(credential string, svcId string, env string) (ProxyConfigList, error) {
 	var pc ProxyConfigList
 
 	endpoint := fmt.Sprintf(proxyConfigList, svcId, env)
-	req, err := c.buildGetReq(endpoint)
+	req, err := c.buildGetReq(endpoint, credential)
 	if err != nil {
 		return pc, httpReqError
 	}
 	req.Header.Set("Accept", "application/json")
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
@@ -110,16 +107,15 @@ func (c *ThreeScaleClient) ListProxyConfig(accessToken string, svcId string, env
 }
 
 // PromoteProxyConfig - Promotes a Proxy Config from one environment to another environment.
-func (c *ThreeScaleClient) PromoteProxyConfig(accessToken string, svcId string, env string, version string, toEnv string) (ProxyConfigElement, error) {
+func (c *ThreeScaleClient) PromoteProxyConfig(credential string, svcId string, env string, version string, toEnv string) (ProxyConfigElement, error) {
 	var pe ProxyConfigElement
 	endpoint := fmt.Sprintf(proxyConfigPromote, svcId, env, version)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("to", toEnv)
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPostReq(endpoint, body)
+	req, err := c.buildPostReq(endpoint, credential, body)
 	if err != nil {
 		return pe, httpReqError
 	}
@@ -135,15 +131,14 @@ func (c *ThreeScaleClient) PromoteProxyConfig(accessToken string, svcId string, 
 	return pe, err
 }
 
-func (c *ThreeScaleClient) getProxyConfig(token, endpoint string) (ProxyConfigElement, error) {
+func (c *ThreeScaleClient) getProxyConfig(credential, endpoint string) (ProxyConfigElement, error) {
 	var pc ProxyConfigElement
-	req, err := c.buildGetReq(endpoint)
+	req, err := c.buildGetReq(endpoint, credential)
 	if err != nil {
 		return pc, httpReqError
 	}
 
 	values := url.Values{}
-	values.Add("access_token", token)
 	req.URL.RawQuery = values.Encode()
 	req.Header.Set("accept", "application/json")
 
