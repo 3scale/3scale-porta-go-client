@@ -87,11 +87,10 @@ func (c *ThreeScaleClient) ListUsers(accountID int64, filterParams Params) (*Use
 }
 
 // UpdateUser updates user of a given account
-func (c *ThreeScaleClient) UpdateUser(accessToken string, accountID int64, userID int64, userParams Params) (*User, error) {
+func (c *ThreeScaleClient) UpdateUser(accountID int64, userID int64, userParams Params) (*User, error) {
 	endpoint := fmt.Sprintf(userUpdate, accountID, userID)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	for k, v := range userParams {
 		values.Add(k, v)
 	}

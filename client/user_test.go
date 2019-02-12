@@ -18,13 +18,6 @@ func TestActivateUserOk(t *testing.T) {
 			t.Fatalf("wrong http method")
 		}
 
-		err := req.ParseForm()
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		}
-
 		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.json"))
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -132,10 +125,10 @@ func TestReadUser(t *testing.T) {
 			}
 		})
 
-		c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+		c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
 
 		t.Run(input.Name, func(subTest *testing.T) {
-			user, err := c.ReadUser(accessToken, accountID, userID)
+			user, err := c.ReadUser(accountID, userID)
 			if input.ExpectErr {
 				if err == nil {
 					subTest.Fatalf("client operation did not return error")
@@ -221,10 +214,10 @@ func TestListUser(t *testing.T) {
 			}
 		})
 
-		c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+		c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
 
 		t.Run(input.Name, func(subTest *testing.T) {
-			userList, err := c.ListUsers(accessToken, accountID, input.FilterParams)
+			userList, err := c.ListUsers(accountID, input.FilterParams)
 			if input.ExpectErr {
 				if err == nil {
 					subTest.Fatalf("client operation did not return error")
@@ -311,10 +304,10 @@ func TestUpdateUser(t *testing.T) {
 			}
 		})
 
-		c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+		c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
 
 		t.Run(input.Name, func(subTest *testing.T) {
-			user, err := c.UpdateUser(accessToken, accountID, userID, input.FilterParams)
+			user, err := c.UpdateUser(accountID, userID, input.FilterParams)
 			if input.ExpectErr {
 				if err == nil {
 					subTest.Fatalf("client operation did not return error")
