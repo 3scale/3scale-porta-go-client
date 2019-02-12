@@ -9,7 +9,7 @@ import (
 )
 
 func TestCreateTenantOk(t *testing.T) {
-	accessToken := "someAccessToken"
+	credential := "someAccessToken"
 	orgName := "someOrgName"
 	userName := "someUserName"
 	email := "someEmail@example.com"
@@ -28,7 +28,6 @@ func TestCreateTenantOk(t *testing.T) {
 			ParamName          string
 			ParamExpectedValue string
 		}{
-			{"access_token", accessToken},
 			{"org_name", orgName},
 			{"username", userName},
 			{"email", email},
@@ -51,7 +50,7 @@ func TestCreateTenantOk(t *testing.T) {
 
 	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
 
-	signup, err := c.CreateTenant(accessToken, orgName, userName, email, password)
+	signup, err := c.CreateTenant(credential, orgName, userName, email, password)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -70,7 +69,7 @@ func TestCreateTenantOk(t *testing.T) {
 }
 
 func TestCreateTenantErrors(t *testing.T) {
-	accessToken := "someAccessToken"
+	credential := "someAccessToken"
 	orgName := "someOrgName"
 	userName := "someUserName"
 	email := "someEmail@example.com"
@@ -102,7 +101,7 @@ func TestCreateTenantErrors(t *testing.T) {
 				}
 			})
 			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			_, err := c.CreateTenant(accessToken, orgName, userName, email, password)
+			_, err := c.CreateTenant(credential, orgName, userName, email, password)
 			if err == nil {
 				subTest.Fatalf("create tenant did not return error")
 			}
