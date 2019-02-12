@@ -10,7 +10,7 @@ import (
 
 // CreateMappingRule - Create API for Mapping Rule endpoint
 func (c *ThreeScaleClient) CreateMappingRule(
-	credential string, svcId string, method string,
+	svcId string, method string,
 	pattern string, delta int, metricId string) (MappingRule, error) {
 
 	var mr MappingRule
