@@ -37,7 +37,7 @@ func (c *ThreeScaleClient) CreateService(accessToken string, name string) (Servi
 	return s, err
 }
 
-// UpdateService - Update the service. Valid params keys and their purpose are as follows:
+// UpdateService         - Update the service. Valid params keys and their purpose are as follows:
 // "name"                - Name of the service.
 // "description"		 - Description of the service
 // "support_email"       - New support email.
