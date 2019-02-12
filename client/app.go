@@ -45,17 +45,12 @@ func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name strin
 }
 
 // ListApplications - List of applications for a given account.
-func (c *ThreeScaleClient) ListApplications(accessToken string, accountID int64) (*ApplicationList, error) {
+func (c *ThreeScaleClient) ListApplications(accountID int64) (*ApplicationList, error) {
 	endpoint := fmt.Sprintf(appList, accountID)
 	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return nil, err
 	}
-
-	urlValues := url.Values{}
-	urlValues.Add("access_token", accessToken)
-
-	req.URL.RawQuery = urlValues.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

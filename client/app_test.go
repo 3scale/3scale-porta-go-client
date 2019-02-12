@@ -13,10 +13,10 @@ import (
 
 func TestCreateApp(t *testing.T) {
 	const (
-		credential  = "123"
-		accountID   = "321"
-		planID      = "abc"
-		name        = "test"
+		credential = "123"
+		accountID  = "321"
+		planID     = "abc"
+		name       = "test"
 	)
 
 	inputs := []struct {
@@ -123,10 +123,10 @@ func TestListApp(t *testing.T) {
 			}
 		})
 
-		c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+		c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
 
 		t.Run(input.Name, func(subTest *testing.T) {
-			appList, err := c.ListApplications(accessToken, accountID)
+			appList, err := c.ListApplications(accountID)
 			if input.ExpectErr {
 				if err == nil {
 					subTest.Fatalf("client operation did not return error")
