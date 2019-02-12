@@ -39,16 +39,12 @@ func (c *ThreeScaleClient) CreateTenant(orgName, username, email, password strin
 }
 
 // ShowTenant - Returns tenant info for the specified ID
-func (c *ThreeScaleClient) ShowTenant(accessToken string, tenantID int64) (*Tenant, error) {
+func (c *ThreeScaleClient) ShowTenant(tenantID int64) (*Tenant, error) {
 	endpoint := fmt.Sprintf(tenantRead, tenantID)
 	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return nil, httpReqError
 	}
-
-	values := url.Values{}
-	values.Add("access_token", accessToken)
-	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
@@ -62,11 +58,10 @@ func (c *ThreeScaleClient) ShowTenant(accessToken string, tenantID int64) (*Tena
 }
 
 // UpdateTenant - Updates tenant info for the specified ID
-func (c *ThreeScaleClient) UpdateTenant(accessToken string, tenantID int64, params Params) (*Tenant, error) {
+func (c *ThreeScaleClient) UpdateTenant(tenantID int64, params Params) (*Tenant, error) {
 	endpoint := fmt.Sprintf(tenantUpdate, tenantID)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	for k, v := range params {
 		values.Add(k, v)
 	}
@@ -88,14 +83,10 @@ func (c *ThreeScaleClient) UpdateTenant(accessToken string, tenantID int64, para
 }
 
 // DeleteTenant - Schedules a tenant account to be permanently deleted in X days (check Porta doc)
-func (c *ThreeScaleClient) DeleteTenant(accessToken string, tenantID int64) error {
+func (c *ThreeScaleClient) DeleteTenant(tenantID int64) error {
 	endpoint := fmt.Sprintf(tenantUpdate, tenantID)
 
-	values := url.Values{}
-	values.Add("access_token", accessToken)
-
-	body := strings.NewReader(values.Encode())
-	req, err := c.buildDeleteReq(endpoint, body)
+	req, err := c.buildDeleteReq(endpoint, nil)
 	if err != nil {
 		return httpReqError
 	}

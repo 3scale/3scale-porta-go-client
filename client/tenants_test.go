@@ -134,8 +134,12 @@ func TestShowTenantOk(t *testing.T) {
 			t.Fatalf("wrong http method called for create tenant endpoint")
 		}
 
-		q := req.URL.Query()
-		if q.Get("access_token") != accessToken {
+		basicAuthValue, err := fetchBasicAuthHeader(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if basicAuthValue != basicAuth("", accessToken) {
 			t.Fatalf("Expected access token not found")
 		}
 
@@ -152,9 +156,9 @@ func TestShowTenantOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
 
-	tenant, err := c.ShowTenant(accessToken, tenantID)
+	tenant, err := c.ShowTenant(tenantID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -203,12 +207,16 @@ func TestUpdateTenantOk(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if req.Form.Get("access_token") != accessToken {
+		basicAuthValue, err := fetchBasicAuthHeader(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if basicAuthValue != basicAuth("", accessToken) {
 			t.Fatalf("Expected access token not found")
 		}
 
-		// request includes access_token
-		if len(req.Form) != len(params)+1 {
+		if len(req.Form) != len(params) {
 			t.Fatalf("Form num params differ: expected (%d) found (%d)", len(params), len(req.Form))
 		}
 
@@ -248,13 +256,12 @@ func TestUpdateTenantOk(t *testing.T) {
 
 func TestUpdateTenantErrors(t *testing.T) {
 	op := func(c *ThreeScaleClient) error {
-		accessToken := "someAccessToken"
 		tenantID := int64(42)
 		params := Params{
 			"support_email": "admin@corp24.com",
 			"org_name":      "Corp24",
 		}
-		_, err := c.UpdateTenant(accessToken, tenantID, params)
+		_, err := c.UpdateTenant(tenantID, params)
 		return err
 	}
 	helperClientError(t, op)
@@ -286,8 +293,14 @@ func TestDeleteTenant(t *testing.T) {
 					subTest.Fatalf("Path: expected (%s) found (%s)", fmt.Sprintf(tenantRead, tenantID), p)
 				}
 
-				// http library does not parse body when method is DELETE
-				// cannot read request body
+				basicAuthValue, err := fetchBasicAuthHeader(req)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if basicAuthValue != basicAuth("", accessToken) {
+					t.Fatalf("Expected access token not found")
+				}
 
 				return &http.Response{
 					StatusCode: tt.HTTPStatusCode,
@@ -295,8 +308,8 @@ func TestDeleteTenant(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			err := c.DeleteTenant(accessToken, tenantID)
+			c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
+			err := c.DeleteTenant(tenantID)
 
 			if tt.ErrorExpected {
 				if err == nil {
