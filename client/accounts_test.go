@@ -9,15 +9,21 @@ import (
 )
 
 func TestListAccountsOk(t *testing.T) {
-	access_token := "someAccessToken"
+	credential := "someAccessToken"
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
 		if req.Method != http.MethodGet {
 			t.Fatalf("wrong helper called for account list api")
 		}
 
-		q := req.URL.Query()
-		if q.Get("access_token") != access_token {
-			t.Fatalf("Expected access token not found")
+		auth := strings.SplitN(req.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			t.Fatalf("Basic auth header missing or not valid")
+		}
+
+		expectedAuth := basicAuth("", credential)
+		if auth[1] != expectedAuth {
+			t.Fatalf("Invalid authorization header value, expected %s got %s", expectedAuth, auth[1])
 		}
 
 		bodyReader := bytes.NewReader(helperLoadBytes(t, "accounts_fixture.xml"))
@@ -28,9 +34,9 @@ func TestListAccountsOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	accountList, err := c.ListAccounts(access_token)
+	accountList, err := c.ListAccounts()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -46,7 +52,7 @@ func TestListAccountsOk(t *testing.T) {
 }
 
 func TestListAccountsErrors(t *testing.T) {
-	access_token := "someAccessToken"
+	credential := "someAccessToken"
 	errorTests := []struct {
 		Name                string
 		ResponseBodyFixture string
@@ -70,8 +76,8 @@ func TestListAccountsErrors(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			_, err := c.ListAccounts(access_token)
+			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+			_, err := c.ListAccounts()
 			if err == nil {
 				t.Fatalf("account list did not return error")
 			}

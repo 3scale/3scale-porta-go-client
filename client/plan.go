@@ -16,12 +16,11 @@ const (
 )
 
 // CreateAppPlan - Creates an application plan.
-func (c *ThreeScaleClient) CreateAppPlan(accessToken string, svcId string, name string, stateEvent string) (Plan, error) {
+func (c *ThreeScaleClient) CreateAppPlan(svcId string, name string, stateEvent string) (Plan, error) {
 	var apiResp Plan
 	endpoint := fmt.Sprintf(appPlanCreate, svcId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 	values.Add("name", name)
 	values.Add("state_event", stateEvent)
@@ -43,11 +42,10 @@ func (c *ThreeScaleClient) CreateAppPlan(accessToken string, svcId string, name 
 }
 
 // UpdateAppPlan - Updates an application plan
-func (c *ThreeScaleClient) UpdateAppPlan(accessToken string, svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
+func (c *ThreeScaleClient) UpdateAppPlan(svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 	values.Add("name", name)
 	values.Add("state_event", stateEvent)
@@ -55,15 +53,14 @@ func (c *ThreeScaleClient) UpdateAppPlan(accessToken string, svcId string, appPl
 		values.Add(k, v)
 	}
 
-	return c.updatePlan(endpoint, accessToken, values)
+	return c.updatePlan(endpoint, values)
 }
 
 // DeleteAppPlan - Deletes an application plan
-func (c *ThreeScaleClient) DeleteAppPlan(accessToken string, svcId string, appPlanId string) error {
+func (c *ThreeScaleClient) DeleteAppPlan(svcId string, appPlanId string) error {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildDeleteReq(endpoint, body)
@@ -81,7 +78,7 @@ func (c *ThreeScaleClient) DeleteAppPlan(accessToken string, svcId string, appPl
 }
 
 // ListAppPlanByServiceId - Lists all application plans, filtering on service id
-func (c *ThreeScaleClient) ListAppPlanByServiceId(accessToken string, svcId string) (ApplicationPlansList, error) {
+func (c *ThreeScaleClient) ListAppPlanByServiceId(svcId string) (ApplicationPlansList, error) {
 	var appPlans ApplicationPlansList
 	endpoint := fmt.Sprintf(appPlansByServiceList, svcId)
 
@@ -91,7 +88,6 @@ func (c *ThreeScaleClient) ListAppPlanByServiceId(accessToken string, svcId stri
 	}
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 
 	req.URL.RawQuery = values.Encode()
@@ -106,7 +102,7 @@ func (c *ThreeScaleClient) ListAppPlanByServiceId(accessToken string, svcId stri
 }
 
 // ListAppPlan - List all application plans
-func (c *ThreeScaleClient) ListAppPlan(accessToken string) (ApplicationPlansList, error) {
+func (c *ThreeScaleClient) ListAppPlan() (ApplicationPlansList, error) {
 	var appPlans ApplicationPlansList
 	endpoint := appPlansList
 
@@ -116,7 +112,6 @@ func (c *ThreeScaleClient) ListAppPlan(accessToken string) (ApplicationPlansList
 	}
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 
 	req.URL.RawQuery = values.Encode()
 	resp, err := c.httpClient.Do(req)
@@ -130,15 +125,14 @@ func (c *ThreeScaleClient) ListAppPlan(accessToken string) (ApplicationPlansList
 }
 
 // SetDefaultPlan - Makes the application plan the default one
-func (c *ThreeScaleClient) SetDefaultPlan(accessToken string, svcId string, id string) (Plan, error) {
+func (c *ThreeScaleClient) SetDefaultPlan(svcId string, id string) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanSetDefault, svcId, id)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
-	return c.updatePlan(endpoint, accessToken, values)
+	return c.updatePlan(endpoint, values)
 }
 
-func (c *ThreeScaleClient) updatePlan(endpoint string, accessToken string, values url.Values) (Plan, error) {
+func (c *ThreeScaleClient) updatePlan(endpoint string, values url.Values) (Plan, error) {
 	var apiResp Plan
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPutReq(endpoint, body)

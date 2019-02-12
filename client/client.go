@@ -4,6 +4,7 @@ package client
 // which is a subset of the Account Management API.
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"encoding/xml"
 	"errors"
@@ -34,11 +35,11 @@ func NewAdminPortal(scheme string, host string, port int) (*AdminPortal, error) 
 
 // Creates a ThreeScaleClient to communicate with Account Management API.
 // If http Client is nil, the default http client will be used
-func NewThreeScale(backEnd *AdminPortal, httpClient *http.Client) *ThreeScaleClient {
+func NewThreeScale(backEnd *AdminPortal, credential string, httpClient *http.Client) *ThreeScaleClient {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	return &ThreeScaleClient{backEnd, httpClient}
+	return &ThreeScaleClient{backEnd, credential, httpClient}
 }
 
 func NewParams() Params {
@@ -58,11 +59,17 @@ func (p Params) AddParam(key string, value string) {
 	p[key] = value
 }
 
+// SetCredentials allow the user to set the client credentials
+func (c *ThreeScaleClient) SetCredentials(credential string) {
+	c.credential = credential
+}
+
 // Request builder for GET request to the provided endpoint
 func (c *ThreeScaleClient) buildGetReq(ep string) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("GET", c.adminPortal.baseUrl.ResolveReference(path).String(), nil)
 	req.Header.Set("Accept", "application/xml")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
@@ -72,6 +79,7 @@ func (c *ThreeScaleClient) buildPostReq(ep string, body io.Reader) (*http.Reques
 	req, err := http.NewRequest("POST", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
@@ -81,6 +89,7 @@ func (c *ThreeScaleClient) buildUpdateReq(ep string, body io.Reader) (*http.Requ
 	req, err := http.NewRequest("PUT", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
@@ -90,6 +99,7 @@ func (c *ThreeScaleClient) buildDeleteReq(ep string, body io.Reader) (*http.Requ
 	req, err := http.NewRequest("DELETE", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
@@ -99,6 +109,7 @@ func (c *ThreeScaleClient) buildPutReq(ep string, body io.Reader) (*http.Request
 	req, err := http.NewRequest("PUT", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
@@ -186,4 +197,9 @@ func createApiErr(statusCode int, message string) ApiErr {
 
 func createDecodingErrorMessage(err error) string {
 	return fmt.Sprintf("decoding error - %s", err.Error())
+}
+
+func basicAuth(username, password string) string {
+	auth := username + ":" + password
+	return base64.StdEncoding.EncodeToString([]byte(auth))
 }

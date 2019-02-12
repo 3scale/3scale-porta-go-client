@@ -18,6 +18,7 @@ type AdminPortal struct {
 // ThreeScaleClient interacts with 3scale Service Management API
 type ThreeScaleClient struct {
 	adminPortal *AdminPortal
+	credential string
 	httpClient  *http.Client
 }
 

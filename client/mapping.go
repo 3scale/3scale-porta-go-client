@@ -10,14 +10,13 @@ import (
 
 // CreateMappingRule - Create API for Mapping Rule endpoint
 func (c *ThreeScaleClient) CreateMappingRule(
-	accessToken string, svcId string, method string,
+	svcId string, method string,
 	pattern string, delta int, metricId string) (MappingRule, error) {
 
 	var mr MappingRule
 	ep := genMrEp(svcId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 	values.Add("http_method", method)
 	values.Add("pattern", pattern)
@@ -48,13 +47,12 @@ func (c *ThreeScaleClient) CreateMappingRule(
 // "pattern"     - Mapping Rule pattern
 // "delta"       - Increase the metric by this delta
 // "metric_id"   - The metric ID
-func (c *ThreeScaleClient) UpdateMappingRule(accessToken string, svcId string, id string, params Params) (MappingRule, error) {
+func (c *ThreeScaleClient) UpdateMappingRule(svcId string, id string, params Params) (MappingRule, error) {
 	var m MappingRule
 
 	ep := genMrUpdateEp(svcId, id)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	for k, v := range params {
 		values.Add(k, v)
 	}
@@ -78,13 +76,10 @@ func (c *ThreeScaleClient) UpdateMappingRule(accessToken string, svcId string, i
 
 // DeleteMappingRule - Deletes a Proxy Mapping Rule.
 // The proxy object must be updated after a mapping rule deletion to apply the change to proxy config
-func (c *ThreeScaleClient) DeleteMappingRule(accessToken string, svcId string, id string) error {
+func (c *ThreeScaleClient) DeleteMappingRule(svcId string, id string) error {
 	ep := genMrUpdateEp(svcId, id)
 
-	values := url.Values{}
-	values.Add("access_token", accessToken)
-
-	body := strings.NewReader(values.Encode())
+	body := strings.NewReader("")
 	req, err := c.buildDeleteReq(ep, body)
 	if err != nil {
 		return httpReqError
@@ -101,7 +96,7 @@ func (c *ThreeScaleClient) DeleteMappingRule(accessToken string, svcId string, i
 }
 
 // ListMappingRule - List API for Mapping Rule endpoint
-func (c *ThreeScaleClient) ListMappingRule(accessToken string, svcId string) (MappingRuleList, error) {
+func (c *ThreeScaleClient) ListMappingRule(svcId string) (MappingRuleList, error) {
 	var mrl MappingRuleList
 	ep := genMrEp(svcId)
 
@@ -111,7 +106,6 @@ func (c *ThreeScaleClient) ListMappingRule(accessToken string, svcId string) (Ma
 	}
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 
 	req.URL.RawQuery = values.Encode()

@@ -9,15 +9,13 @@ const (
 	accountList = "/admin/api/accounts.xml"
 )
 
-func (c *ThreeScaleClient) ListAccounts(accessToken string) (*AccountList, error) {
+func (c *ThreeScaleClient) ListAccounts() (*AccountList, error) {
 	req, err := c.buildGetReq(accountList)
 	if err != nil {
 		return nil, err
 	}
 
 	urlValues := url.Values{}
-	urlValues.Add("access_token", accessToken)
-
 	req.URL.RawQuery = urlValues.Encode()
 
 	resp, err := c.httpClient.Do(req)

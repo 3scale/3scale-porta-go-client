@@ -9,7 +9,7 @@ import (
 )
 
 func TestActivateUserOk(t *testing.T) {
-	accessToken := "someAccessToken"
+	credential := "someAccessToken"
 	accountID := "someAccountID"
 	userID := "someUserID"
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
@@ -22,8 +22,15 @@ func TestActivateUserOk(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if req.Form.Get("access_token") != accessToken {
-			t.Fatalf("field access_token: expected (%s) found (%s)", accessToken, req.Form.Get("access_token"))
+		auth := strings.SplitN(req.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			t.Fatalf("Basic auth header missing or not valid")
+		}
+
+		expectedAuth := basicAuth("", credential)
+		if auth[1] != expectedAuth {
+			t.Fatalf("Invalid authorization header value, expected %s got %s", expectedAuth, auth[1])
 		}
 
 		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.xml"))
@@ -34,16 +41,16 @@ func TestActivateUserOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	err := c.ActivateUser(accessToken, accountID, userID)
+	err := c.ActivateUser(accountID, userID)
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestActivateUserErrors(t *testing.T) {
-	accessToken := "someAccessToken"
+	credential := "someAccessToken"
 	accountID := "someAccountID"
 	userID := "someUserID"
 	errorTests := []struct {
@@ -68,8 +75,8 @@ func TestActivateUserErrors(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			err := c.ActivateUser(accessToken, accountID, userID)
+			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+			err := c.ActivateUser(accountID, userID)
 			if err == nil {
 				subTest.Fatalf("activate user did not return error")
 			}

@@ -8,13 +8,12 @@ import (
 )
 
 // CreateMetric - Creates a metric on a service. All metrics are scoped by service.
-func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name string, description string, unit string) (Metric, error) {
+func (c *ThreeScaleClient) CreateMetric(svcId string, name string, description string, unit string) (Metric, error) {
 	var m Metric
 
 	ep := genMetricCreateListEp(svcId)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 	values.Add("friendly_name", name)
 	values.Add("description", description)
@@ -40,13 +39,12 @@ func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name s
 // "friendly_name" - Name of the metric.
 // "unit" - Measure unit of the metric.
 // "description" - Description of the metric.
-func (c *ThreeScaleClient) UpdateMetric(accessToken string, svcId string, id string, params Params) (Metric, error) {
+func (c *ThreeScaleClient) UpdateMetric(svcId string, id string, params Params) (Metric, error) {
 	var m Metric
 
 	ep := genMetricUpdateDeleteEp(svcId, id)
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	for k, v := range params {
 		values.Add(k, v)
 	}
@@ -69,13 +67,10 @@ func (c *ThreeScaleClient) UpdateMetric(accessToken string, svcId string, id str
 
 // DeleteMetric - Deletes the metric of a service.
 // When a metric is deleted, the associated limits across application plans are removed
-func (c *ThreeScaleClient) DeleteMetric(accessToken string, svcId string, id string) error {
+func (c *ThreeScaleClient) DeleteMetric(svcId string, id string) error {
 	ep := genMetricUpdateDeleteEp(svcId, id)
 
-	values := url.Values{}
-	values.Add("access_token", accessToken)
-
-	body := strings.NewReader(values.Encode())
+	body := strings.NewReader("")
 	req, err := c.buildDeleteReq(ep, body)
 	if err != nil {
 		return httpReqError
@@ -91,7 +86,7 @@ func (c *ThreeScaleClient) DeleteMetric(accessToken string, svcId string, id str
 }
 
 // ListMetric - Returns the list of metrics of a service
-func (c *ThreeScaleClient) ListMetrics(accessToken string, svcId string) (MetricList, error) {
+func (c *ThreeScaleClient) ListMetrics(svcId string) (MetricList, error) {
 	var ml MetricList
 
 	ep := genMetricCreateListEp(svcId)
@@ -102,7 +97,6 @@ func (c *ThreeScaleClient) ListMetrics(accessToken string, svcId string) (Metric
 	}
 
 	values := url.Values{}
-	values.Add("access_token", accessToken)
 	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
