@@ -22,8 +22,15 @@ func TestActivateUserOk(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		if req.Form.Get("access_token") != credential {
-			t.Fatalf("field access_token: expected (%s) found (%s)", credential, req.Form.Get("access_token"))
+		auth := strings.SplitN(req.Header.Get("Authorization"), " ", 2)
+
+		if len(auth) != 2 || auth[0] != "Basic" {
+			t.Fatalf("Basic auth header missing or not valid")
+		}
+
+		expectedAuth := basicAuth("", credential)
+		if auth[1] != expectedAuth {
+			t.Fatalf("Invalid authorization header value, expected %s got %s", expectedAuth, auth[1])
 		}
 
 		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.xml"))
