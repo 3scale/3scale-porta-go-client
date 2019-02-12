@@ -24,7 +24,7 @@ func (c *ThreeScaleClient) CreateMappingRule(
 	values.Add("metric_id", metricId)
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPostReq(ep, credential, body)
+	req, err := c.buildPostReq(ep, body)
 	if err != nil {
 		return mr, httpReqError
 	}
@@ -47,7 +47,7 @@ func (c *ThreeScaleClient) CreateMappingRule(
 // "pattern"     - Mapping Rule pattern
 // "delta"       - Increase the metric by this delta
 // "metric_id"   - The metric ID
-func (c *ThreeScaleClient) UpdateMappingRule(credential string, svcId string, id string, params Params) (MappingRule, error) {
+func (c *ThreeScaleClient) UpdateMappingRule(svcId string, id string, params Params) (MappingRule, error) {
 	var m MappingRule
 
 	ep := genMrUpdateEp(svcId, id)
@@ -58,7 +58,7 @@ func (c *ThreeScaleClient) UpdateMappingRule(credential string, svcId string, id
 	}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildUpdateReq(ep, credential, body)
+	req, err := c.buildUpdateReq(ep, body)
 	if err != nil {
 		return m, httpReqError
 	}
@@ -76,11 +76,11 @@ func (c *ThreeScaleClient) UpdateMappingRule(credential string, svcId string, id
 
 // DeleteMappingRule - Deletes a Proxy Mapping Rule.
 // The proxy object must be updated after a mapping rule deletion to apply the change to proxy config
-func (c *ThreeScaleClient) DeleteMappingRule(credential string, svcId string, id string) error {
+func (c *ThreeScaleClient) DeleteMappingRule(svcId string, id string) error {
 	ep := genMrUpdateEp(svcId, id)
 
 	body := strings.NewReader("")
-	req, err := c.buildDeleteReq(ep, credential, body)
+	req, err := c.buildDeleteReq(ep, body)
 	if err != nil {
 		return httpReqError
 	}
@@ -96,11 +96,11 @@ func (c *ThreeScaleClient) DeleteMappingRule(credential string, svcId string, id
 }
 
 // ListMappingRule - List API for Mapping Rule endpoint
-func (c *ThreeScaleClient) ListMappingRule(credential string, svcId string) (MappingRuleList, error) {
+func (c *ThreeScaleClient) ListMappingRule(svcId string) (MappingRuleList, error) {
 	var mrl MappingRuleList
 	ep := genMrEp(svcId)
 
-	req, err := c.buildGetReq(ep, credential)
+	req, err := c.buildGetReq(ep)
 	if err != nil {
 		return mrl, httpReqError
 	}

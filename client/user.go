@@ -12,12 +12,12 @@ const (
 )
 
 // ActivateUser activates user of a given account from pending state to active
-func (c *ThreeScaleClient) ActivateUser(credential, accountID, userID string) error {
+func (c *ThreeScaleClient) ActivateUser(accountID, userID string) error {
 	endpoint := fmt.Sprintf(userActivate, accountID, userID)
 
 	values := url.Values{}
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildUpdateReq(endpoint, credential, body)
+	req, err := c.buildUpdateReq(endpoint, body)
 	if err != nil {
 		return err
 	}

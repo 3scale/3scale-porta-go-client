@@ -48,9 +48,9 @@ func TestCreateTenantOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	signup, err := c.CreateTenant(credential, orgName, userName, email, password)
+	signup, err := c.CreateTenant(orgName, userName, email, password)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,8 +100,8 @@ func TestCreateTenantErrors(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			_, err := c.CreateTenant(credential, orgName, userName, email, password)
+			c := NewThreeScale(NewTestAdminPortal(t),credential, httpClient)
+			_, err := c.CreateTenant(orgName, userName, email, password)
 			if err == nil {
 				subTest.Fatalf("create tenant did not return error")
 			}

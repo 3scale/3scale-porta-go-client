@@ -9,8 +9,8 @@ const (
 	accountList = "/admin/api/accounts.xml"
 )
 
-func (c *ThreeScaleClient) ListAccounts(credential string) (*AccountList, error) {
-	req, err := c.buildGetReq(accountList, credential)
+func (c *ThreeScaleClient) ListAccounts() (*AccountList, error) {
+	req, err := c.buildGetReq(accountList)
 	if err != nil {
 		return nil, err
 	}

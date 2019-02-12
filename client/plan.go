@@ -16,7 +16,7 @@ const (
 )
 
 // CreateAppPlan - Creates an application plan.
-func (c *ThreeScaleClient) CreateAppPlan(credential string, svcId string, name string, stateEvent string) (Plan, error) {
+func (c *ThreeScaleClient) CreateAppPlan(svcId string, name string, stateEvent string) (Plan, error) {
 	var apiResp Plan
 	endpoint := fmt.Sprintf(appPlanCreate, svcId)
 
@@ -26,7 +26,7 @@ func (c *ThreeScaleClient) CreateAppPlan(credential string, svcId string, name s
 	values.Add("state_event", stateEvent)
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPostReq(endpoint, credential, body)
+	req, err := c.buildPostReq(endpoint, body)
 	if err != nil {
 		return apiResp, httpReqError
 	}
@@ -42,7 +42,7 @@ func (c *ThreeScaleClient) CreateAppPlan(credential string, svcId string, name s
 }
 
 // UpdateAppPlan - Updates an application plan
-func (c *ThreeScaleClient) UpdateAppPlan(credential string, svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
+func (c *ThreeScaleClient) UpdateAppPlan(svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
 	values := url.Values{}
@@ -53,17 +53,17 @@ func (c *ThreeScaleClient) UpdateAppPlan(credential string, svcId string, appPla
 		values.Add(k, v)
 	}
 
-	return c.updatePlan(endpoint, credential, values)
+	return c.updatePlan(endpoint, values)
 }
 
 // DeleteAppPlan - Deletes an application plan
-func (c *ThreeScaleClient) DeleteAppPlan(credential string, svcId string, appPlanId string) error {
+func (c *ThreeScaleClient) DeleteAppPlan(svcId string, appPlanId string) error {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
 	values := url.Values{}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildDeleteReq(endpoint, credential, body)
+	req, err := c.buildDeleteReq(endpoint, body)
 	if err != nil {
 		return httpReqError
 	}
@@ -78,11 +78,11 @@ func (c *ThreeScaleClient) DeleteAppPlan(credential string, svcId string, appPla
 }
 
 // ListAppPlanByServiceId - Lists all application plans, filtering on service id
-func (c *ThreeScaleClient) ListAppPlanByServiceId(credential string, svcId string) (ApplicationPlansList, error) {
+func (c *ThreeScaleClient) ListAppPlanByServiceId(svcId string) (ApplicationPlansList, error) {
 	var appPlans ApplicationPlansList
 	endpoint := fmt.Sprintf(appPlansByServiceList, svcId)
 
-	req, err := c.buildGetReq(endpoint, credential)
+	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return appPlans, httpReqError
 	}
@@ -102,11 +102,11 @@ func (c *ThreeScaleClient) ListAppPlanByServiceId(credential string, svcId strin
 }
 
 // ListAppPlan - List all application plans
-func (c *ThreeScaleClient) ListAppPlan(credential string) (ApplicationPlansList, error) {
+func (c *ThreeScaleClient) ListAppPlan() (ApplicationPlansList, error) {
 	var appPlans ApplicationPlansList
 	endpoint := appPlansList
 
-	req, err := c.buildGetReq(endpoint, credential)
+	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return appPlans, httpReqError
 	}
@@ -125,17 +125,17 @@ func (c *ThreeScaleClient) ListAppPlan(credential string) (ApplicationPlansList,
 }
 
 // SetDefaultPlan - Makes the application plan the default one
-func (c *ThreeScaleClient) SetDefaultPlan(credential string, svcId string, id string) (Plan, error) {
+func (c *ThreeScaleClient) SetDefaultPlan(svcId string, id string) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanSetDefault, svcId, id)
 
 	values := url.Values{}
-	return c.updatePlan(endpoint, credential, values)
+	return c.updatePlan(endpoint, values)
 }
 
-func (c *ThreeScaleClient) updatePlan(endpoint string, credential string, values url.Values) (Plan, error) {
+func (c *ThreeScaleClient) updatePlan(endpoint string, values url.Values) (Plan, error) {
 	var apiResp Plan
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPutReq(endpoint, credential, body)
+	req, err := c.buildPutReq(endpoint, body)
 	if err != nil {
 		return apiResp, httpReqError
 	}

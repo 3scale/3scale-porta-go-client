@@ -35,11 +35,11 @@ func NewAdminPortal(scheme string, host string, port int) (*AdminPortal, error) 
 
 // Creates a ThreeScaleClient to communicate with Account Management API.
 // If http Client is nil, the default http client will be used
-func NewThreeScale(backEnd *AdminPortal, httpClient *http.Client) *ThreeScaleClient {
+func NewThreeScale(backEnd *AdminPortal, credential string, httpClient *http.Client) *ThreeScaleClient {
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	return &ThreeScaleClient{backEnd, httpClient}
+	return &ThreeScaleClient{backEnd, credential, httpClient}
 }
 
 func NewParams() Params {
@@ -60,51 +60,51 @@ func (p Params) AddParam(key string, value string) {
 }
 
 // Request builder for GET request to the provided endpoint
-func (c *ThreeScaleClient) buildGetReq(ep string, credential string) (*http.Request, error) {
+func (c *ThreeScaleClient) buildGetReq(ep string) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("GET", c.adminPortal.baseUrl.ResolveReference(path).String(), nil)
 	req.Header.Set("Accept", "application/xml")
-	req.Header.Set("Authorization", "Basic "+basicAuth("", credential))
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
 // Request builder for POST request to the provided endpoint
-func (c *ThreeScaleClient) buildPostReq(ep string, credential string, body io.Reader) (*http.Request, error) {
+func (c *ThreeScaleClient) buildPostReq(ep string, body io.Reader) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("POST", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Basic "+basicAuth("", credential))
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
 // Request builder for PUT request to the provided endpoint
-func (c *ThreeScaleClient) buildUpdateReq(ep string, credential string, body io.Reader) (*http.Request, error) {
+func (c *ThreeScaleClient) buildUpdateReq(ep string, body io.Reader) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("PUT", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Basic "+basicAuth("", credential))
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
 // Request builder for DELETE request to the provided endpoint
-func (c *ThreeScaleClient) buildDeleteReq(ep string, credential string, body io.Reader) (*http.Request, error) {
+func (c *ThreeScaleClient) buildDeleteReq(ep string, body io.Reader) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("DELETE", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Basic "+basicAuth("", credential))
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 
 // Request builder for PUT request to the provided endpoint
-func (c *ThreeScaleClient) buildPutReq(ep string, credential string, body io.Reader) (*http.Request, error) {
+func (c *ThreeScaleClient) buildPutReq(ep string, body io.Reader) (*http.Request, error) {
 	path := &url.URL{Path: ep}
 	req, err := http.NewRequest("PUT", c.adminPortal.baseUrl.ResolveReference(path).String(), body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Authorization", "Basic "+basicAuth("", credential))
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
 

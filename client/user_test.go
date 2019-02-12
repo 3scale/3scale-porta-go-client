@@ -41,9 +41,9 @@ func TestActivateUserOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	err := c.ActivateUser(credential, accountID, userID)
+	err := c.ActivateUser(accountID, userID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,8 +75,8 @@ func TestActivateUserErrors(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			err := c.ActivateUser(credential, accountID, userID)
+			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+			err := c.ActivateUser(accountID, userID)
 			if err == nil {
 				subTest.Fatalf("activate user did not return error")
 			}

@@ -12,7 +12,7 @@ const (
 	serviceUpdateDelete = "/admin/api/services/%s.xml"
 )
 
-func (c *ThreeScaleClient) CreateService(credential string, name string) (Service, error) {
+func (c *ThreeScaleClient) CreateService(name string) (Service, error) {
 	var s Service
 
 	endpoint := serviceCreateList
@@ -21,7 +21,7 @@ func (c *ThreeScaleClient) CreateService(credential string, name string) (Servic
 	values.Add("system_name", name)
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPostReq(endpoint, credential, body)
+	req, err := c.buildPostReq(endpoint, body)
 	if err != nil {
 		return s, httpReqError
 	}
@@ -44,7 +44,7 @@ func (c *ThreeScaleClient) CreateService(credential string, name string) (Servic
 // "admin_support_email" - New admin support email.
 // "deployment_option"   - Deployment option for the gateway: 'hosted' for APIcast hosted, 'self-managed' for APIcast Self-managed option
 // "backend_version"     - Authentication mode: '1' for API key, '2' for App Id / App Key, 'oauth' for OAuth mode, 'oidc' for OpenID Connect
-func (c *ThreeScaleClient) UpdateService(credential string, id string, params Params) (Service, error) {
+func (c *ThreeScaleClient) UpdateService(id string, params Params) (Service, error) {
 	var s Service
 
 	endpoint := fmt.Sprintf(serviceUpdateDelete, id)
@@ -55,7 +55,7 @@ func (c *ThreeScaleClient) UpdateService(credential string, id string, params Pa
 	}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildUpdateReq(endpoint, credential, body)
+	req, err := c.buildUpdateReq(endpoint, body)
 	if err != nil {
 		return s, httpReqError
 	}
@@ -72,13 +72,13 @@ func (c *ThreeScaleClient) UpdateService(credential string, id string, params Pa
 
 // DeleteService - Delete the service.
 // Deleting a service removes all applications and service subscriptions.
-func (c *ThreeScaleClient) DeleteService(credential string, id string) error {
+func (c *ThreeScaleClient) DeleteService(id string) error {
 	endpoint := fmt.Sprintf(serviceUpdateDelete, id)
 
 	values := url.Values{}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildDeleteReq(endpoint, credential, body)
+	req, err := c.buildDeleteReq(endpoint, body)
 	if err != nil {
 		return httpReqError
 	}
@@ -92,12 +92,12 @@ func (c *ThreeScaleClient) DeleteService(credential string, id string) error {
 	return handleXMLResp(resp, http.StatusOK, nil)
 }
 
-func (c *ThreeScaleClient) ListServices(credential string) (ServiceList, error) {
+func (c *ThreeScaleClient) ListServices() (ServiceList, error) {
 	var sl ServiceList
 
 	ep := serviceCreateList
 
-	req, err := c.buildGetReq(ep, credential)
+	req, err := c.buildGetReq(ep)
 	if err != nil {
 		return sl, httpReqError
 	}

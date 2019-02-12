@@ -13,7 +13,7 @@ const (
 
 // CreateApp - Create an application.
 // The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
-func (c *ThreeScaleClient) CreateApp(credential string, accountId string, planId string, name string, description string) (Application, error) {
+func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name string, description string) (Application, error) {
 	var apiResp Application
 	endpoint := fmt.Sprintf(appCreate, accountId)
 
@@ -24,7 +24,7 @@ func (c *ThreeScaleClient) CreateApp(credential string, accountId string, planId
 	values.Add("description", description)
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildPostReq(endpoint, credential, body)
+	req, err := c.buildPostReq(endpoint, body)
 	if err != nil {
 		return apiResp, httpReqError
 	}

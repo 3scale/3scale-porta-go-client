@@ -34,9 +34,9 @@ func TestListAccountsOk(t *testing.T) {
 		}
 	})
 
-	c := NewThreeScale(NewTestAdminPortal(t), httpClient)
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	accountList, err := c.ListAccounts(credential)
+	accountList, err := c.ListAccounts()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -76,8 +76,8 @@ func TestListAccountsErrors(t *testing.T) {
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t), httpClient)
-			_, err := c.ListAccounts(credential)
+			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+			_, err := c.ListAccounts()
 			if err == nil {
 				t.Fatalf("account list did not return error")
 			}

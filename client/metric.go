@@ -8,7 +8,7 @@ import (
 )
 
 // CreateMetric - Creates a metric on a service. All metrics are scoped by service.
-func (c *ThreeScaleClient) CreateMetric(credential string, svcId string, name string, description string, unit string) (Metric, error) {
+func (c *ThreeScaleClient) CreateMetric(svcId string, name string, description string, unit string) (Metric, error) {
 	var m Metric
 
 	ep := genMetricCreateListEp(svcId)
@@ -21,7 +21,7 @@ func (c *ThreeScaleClient) CreateMetric(credential string, svcId string, name st
 
 	body := strings.NewReader(values.Encode())
 
-	req, err := c.buildPostReq(ep,credential, body)
+	req, err := c.buildPostReq(ep, body)
 	if err != nil {
 		return m, httpReqError
 	}
@@ -39,7 +39,7 @@ func (c *ThreeScaleClient) CreateMetric(credential string, svcId string, name st
 // "friendly_name" - Name of the metric.
 // "unit" - Measure unit of the metric.
 // "description" - Description of the metric.
-func (c *ThreeScaleClient) UpdateMetric(credential string, svcId string, id string, params Params) (Metric, error) {
+func (c *ThreeScaleClient) UpdateMetric(svcId string, id string, params Params) (Metric, error) {
 	var m Metric
 
 	ep := genMetricUpdateDeleteEp(svcId, id)
@@ -50,7 +50,7 @@ func (c *ThreeScaleClient) UpdateMetric(credential string, svcId string, id stri
 	}
 
 	body := strings.NewReader(values.Encode())
-	req, err := c.buildUpdateReq(ep, credential, body)
+	req, err := c.buildUpdateReq(ep, body)
 	if err != nil {
 		return m, httpReqError
 	}
@@ -67,11 +67,11 @@ func (c *ThreeScaleClient) UpdateMetric(credential string, svcId string, id stri
 
 // DeleteMetric - Deletes the metric of a service.
 // When a metric is deleted, the associated limits across application plans are removed
-func (c *ThreeScaleClient) DeleteMetric(credential string, svcId string, id string) error {
+func (c *ThreeScaleClient) DeleteMetric(svcId string, id string) error {
 	ep := genMetricUpdateDeleteEp(svcId, id)
 
 	body := strings.NewReader("")
-	req, err := c.buildDeleteReq(ep, credential, body)
+	req, err := c.buildDeleteReq(ep, body)
 	if err != nil {
 		return httpReqError
 	}
@@ -86,12 +86,12 @@ func (c *ThreeScaleClient) DeleteMetric(credential string, svcId string, id stri
 }
 
 // ListMetric - Returns the list of metrics of a service
-func (c *ThreeScaleClient) ListMetrics(credential string, svcId string) (MetricList, error) {
+func (c *ThreeScaleClient) ListMetrics(svcId string) (MetricList, error) {
 	var ml MetricList
 
 	ep := genMetricCreateListEp(svcId)
 
-	req, err := c.buildGetReq(ep, credential)
+	req, err := c.buildGetReq(ep)
 	if err != nil {
 		return ml, httpReqError
 	}
