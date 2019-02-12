@@ -18,6 +18,15 @@ func TestActivateUserOk(t *testing.T) {
 			t.Fatalf("wrong http method")
 		}
 
+		basicAuthValue, err := fetchBasicAuthHeader(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if basicAuthValue != basicAuth("", accessToken) {
+			t.Fatalf("Expected access token not found")
+		}
+
 		bodyReader := bytes.NewReader(helperLoadBytes(t, "user_response_fixture.json"))
 		return &http.Response{
 			StatusCode: http.StatusOK,
@@ -113,6 +122,15 @@ func TestReadUser(t *testing.T) {
 				t.Fatal("wrong helper called")
 			}
 
+			basicAuthValue, err := fetchBasicAuthHeader(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if basicAuthValue != basicAuth("", accessToken) {
+				t.Fatalf("Expected access token not found")
+			}
+
 			if req.URL.Path != fmt.Sprintf(userRead, accountID, userID) {
 				t.Fatal("wrong url generated")
 			}
@@ -200,6 +218,15 @@ func TestListUser(t *testing.T) {
 		httpClient := NewTestClient(func(req *http.Request) *http.Response {
 			if req.Method != http.MethodGet {
 				t.Fatal("wrong helper called")
+			}
+
+			basicAuthValue, err := fetchBasicAuthHeader(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if basicAuthValue != basicAuth("", accessToken) {
+				t.Fatalf("Expected access token not found")
 			}
 
 			if req.URL.Path != fmt.Sprintf(userList, accountID) {
@@ -290,6 +317,15 @@ func TestUpdateUser(t *testing.T) {
 		httpClient := NewTestClient(func(req *http.Request) *http.Response {
 			if req.Method != http.MethodPut {
 				t.Fatal("wrong helper called")
+			}
+
+			basicAuthValue, err := fetchBasicAuthHeader(req)
+			if err != nil {
+				t.Error(err)
+			}
+
+			if basicAuthValue != basicAuth("", accessToken) {
+				t.Fatalf("Expected access token not found")
 			}
 
 			if req.URL.Path != fmt.Sprintf(userUpdate, accountID, userID) {
