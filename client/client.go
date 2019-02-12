@@ -59,6 +59,11 @@ func (p Params) AddParam(key string, value string) {
 	p[key] = value
 }
 
+// SetCredentials allow the user to set the client credentials
+func (c *ThreeScaleClient) SetCredentials(credential string) {
+	c.credential = credential
+}
+
 // Request builder for GET request to the provided endpoint
 func (c *ThreeScaleClient) buildGetReq(ep string) (*http.Request, error) {
 	path := &url.URL{Path: ep}
