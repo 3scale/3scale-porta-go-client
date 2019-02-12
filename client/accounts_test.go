@@ -26,7 +26,7 @@ func TestListAccountsOk(t *testing.T) {
 			t.Fatalf("Invalid authorization header value, expected %s got %s", expectedAuth, auth[1])
 		}
 
-		bodyReader := bytes.NewReader(helperLoadBytes(t, "accounts_fixture.xml"))
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "accounts_fixture.json"))
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bodyReader),
@@ -45,7 +45,7 @@ func TestListAccountsOk(t *testing.T) {
 		t.Fatalf("account list not parsed")
 	}
 
-	expectedNumAccounts := 7
+	expectedNumAccounts := 5
 	if len(accountList.Accounts) != expectedNumAccounts {
 		t.Fatalf("expected number of accounts was %d", expectedNumAccounts)
 	}
@@ -57,12 +57,9 @@ func TestListAccountsErrors(t *testing.T) {
 		Name                string
 		ResponseBodyFixture string
 		ExpectedErrorMsg    string
-		ErrorMsg            string
 	}{
-		{"BadSyntaxTest", "accounts_wrong_format_fixture.xml",
-			"XML syntax error", "expected error type is XML syntax error"},
-		{"DecodingErrorTest", "accounts_json_format_fixture.json",
-			"decoding error", "expected error type is decoding error"},
+		{"CorruptedJsonErrorTest", "accounts_wrong_format_fixture.json", "decoding error - unexpected EOF"},
+		{"WrongFormatErrorTest", "xml_format_fixture.xml", "decoding error - invalid character"},
 	}
 
 	for _, tt := range errorTests {
@@ -79,16 +76,16 @@ func TestListAccountsErrors(t *testing.T) {
 			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 			_, err := c.ListAccounts()
 			if err == nil {
-				t.Fatalf("account list did not return error")
+				subTest.Fatalf("account list did not return error")
 			}
 
 			apiError, ok := err.(ApiErr)
 			if !ok {
-				t.Fatalf("expected ApiErr error type")
+				subTest.Fatalf("expected ApiErr error type")
 			}
 
 			if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
-				t.Fatalf(tt.ErrorMsg)
+				subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
 			}
 		})
 	}

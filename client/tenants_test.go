@@ -2,11 +2,57 @@ package client
 
 import (
 	"bytes"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 	"testing"
 )
+
+type clientTenantOperation func(*ThreeScaleClient) error
+
+func helperClientError(t *testing.T, op clientTenantOperation) {
+	errorTests := []struct {
+		Name                string
+		ResponseBodyFixture string
+		ExpectedErrorMsg    string
+		HTTPStatusCode      int
+	}{
+		{"CorruptedJsonErrorTest", "accounts_wrong_format_fixture.json", "decoding error - unexpected EOF", 200},
+		{"WrongFormatErrorTest", "xml_format_fixture.xml", "decoding error - invalid character", 200},
+		{"UnexpectedHTTPStatusCode", "error_response_fixture.json", "Test Error", 400},
+	}
+
+	for _, tt := range errorTests {
+		t.Run(tt.Name, func(subTest *testing.T) {
+			httpClient := NewTestClient(func(req *http.Request) *http.Response {
+				bodyReader := bytes.NewReader(helperLoadBytes(subTest, tt.ResponseBodyFixture))
+
+				return &http.Response{
+					StatusCode: tt.HTTPStatusCode,
+					Body:       ioutil.NopCloser(bodyReader),
+					Header:     make(http.Header),
+				}
+			})
+			credential := "someAccessToken"
+			c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+			err := op(c)
+			if err == nil {
+				subTest.Fatalf("client operation did not return error")
+			}
+
+			apiError, ok := err.(ApiErr)
+			if !ok {
+				subTest.Fatalf("expected ApiErr error type")
+			}
+
+			if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
+				subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
+			}
+		})
+	}
+}
 
 func TestCreateTenantOk(t *testing.T) {
 	credential := "someAccessToken"
@@ -40,7 +86,7 @@ func TestCreateTenantOk(t *testing.T) {
 			}
 		}
 
-		bodyReader := bytes.NewReader(helperLoadBytes(t, "create_tenant_response.xml"))
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "create_tenant_response.json"))
 		return &http.Response{
 			StatusCode: http.StatusCreated,
 			Body:       ioutil.NopCloser(bodyReader),
@@ -59,61 +105,230 @@ func TestCreateTenantOk(t *testing.T) {
 		t.Fatalf("signup not parsed")
 	}
 
-	if signup.Account.SupportEmail != email {
-		t.Fatalf("Email: expected (%s) found (%s)", email, signup.Account.SupportEmail)
+	if signup.Signup.Account.SupportEmail != email {
+		t.Fatalf("Email: expected (%s) found (%s)", email, signup.Signup.Account.SupportEmail)
 	}
 
-	if signup.Account.OrgName != orgName {
-		t.Fatalf("OrgName: expected (%s) found (%s)", orgName, signup.Account.OrgName)
+	if signup.Signup.Account.OrgName != orgName {
+		t.Fatalf("OrgName: expected (%s) found (%s)", orgName, signup.Signup.Account.OrgName)
 	}
 }
 
 func TestCreateTenantErrors(t *testing.T) {
-	credential := "someAccessToken"
-	orgName := "someOrgName"
-	userName := "someUserName"
-	email := "someEmail@example.com"
-	password := "somePassword"
-	errorTests := []struct {
-		Name                string
-		ResponseBodyFixture string
-		ExpectedErrorMsg    string
-		ErrorMsg            string
-		HTTPStatusCode      int
-	}{
-		{"BadSyntaxTest", "accounts_wrong_format_fixture.xml",
-			"XML syntax error", "expected error type is XML syntax error", 201},
-		{"DecodingErrorTest", "accounts_json_format_fixture.json",
-			"decoding error", "expected error type is decoding error", 201},
-		{"UnexpectedHTTPStatusCode", "error_response_fixture.xml",
-			"Test Error", "expected error type is HTTP status error", 200},
+	op := func(c *ThreeScaleClient) error {
+		orgName := "someOrgName"
+		userName := "someUserName"
+		email := "someEmail@example.com"
+		password := "somePassword"
+		_, err := c.CreateTenant(orgName, userName, email, password)
+		return err
+	}
+	helperClientError(t, op)
+}
+
+func TestShowTenantOk(t *testing.T) {
+	accessToken := "someAccessToken"
+	tenantID := int64(42)
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.Method != http.MethodGet {
+			t.Fatalf("wrong http method called for create tenant endpoint")
+		}
+
+		basicAuthValue, err := fetchBasicAuthHeader(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if basicAuthValue != basicAuth("", accessToken) {
+			t.Fatalf("Expected access token not found")
+		}
+
+		p := req.URL.Path
+		if p != fmt.Sprintf(tenantRead, tenantID) {
+			t.Fatalf("Path: expected (%s) found (%s)", fmt.Sprintf(tenantRead, tenantID), p)
+		}
+
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "show_tenant_response.json"))
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bodyReader),
+			Header:     make(http.Header),
+		}
+	})
+
+	c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
+
+	tenant, err := c.ShowTenant(tenantID)
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	for _, tt := range errorTests {
+	if tenant == nil {
+		t.Fatalf("tenant not parsed")
+	}
+
+	if tenant.Signup.Account.SupportEmail != "admin@corp24.com" {
+		t.Fatalf("Email: expected (%s) found (%s)", "admin@corp24.com", tenant.Signup.Account.SupportEmail)
+	}
+
+	if tenant.Signup.Account.OrgName != "Corp24" {
+		t.Fatalf("OrgName: expected (%s) found (%s)", "Corp24", tenant.Signup.Account.OrgName)
+	}
+}
+
+func TestShowTenantErrors(t *testing.T) {
+	op := func(c *ThreeScaleClient) error {
+		tenantID := int64(42)
+		_, err := c.ShowTenant(tenantID)
+		return err
+	}
+	helperClientError(t, op)
+}
+
+func TestUpdateTenantOk(t *testing.T) {
+	accessToken := "someAccessToken"
+	tenantID := int64(42)
+	params := Params{
+		"support_email": "admin@corp24.com",
+		"org_name":      "Corp24",
+	}
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.Method != http.MethodPut {
+			t.Fatalf("wrong http method called for create tenant endpoint")
+		}
+
+		p := req.URL.Path
+		if p != fmt.Sprintf(tenantRead, tenantID) {
+			t.Fatalf("Path: expected (%s) found (%s)", fmt.Sprintf(tenantRead, tenantID), p)
+		}
+
+		err := req.ParseForm()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		basicAuthValue, err := fetchBasicAuthHeader(req)
+		if err != nil {
+			t.Error(err)
+		}
+
+		if basicAuthValue != basicAuth("", accessToken) {
+			t.Fatalf("Expected access token not found")
+		}
+
+		if len(req.Form) != len(params) {
+			t.Fatalf("Form num params differ: expected (%d) found (%d)", len(params), len(req.Form))
+		}
+
+		for paramKey, paramValue := range params {
+			if req.Form.Get(paramKey) != paramValue {
+				t.Fatalf("field %s: expected (%s) found (%s)", paramKey, paramValue, req.Form.Get(paramKey))
+			}
+		}
+
+		bodyReader := bytes.NewReader(helperLoadBytes(t, "show_tenant_response.json"))
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bodyReader),
+			Header:     make(http.Header),
+		}
+	})
+
+	c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
+
+	tenant, err := c.UpdateTenant(tenantID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if tenant == nil {
+		t.Fatalf("tenant not parsed")
+	}
+
+	if tenant.Signup.Account.SupportEmail != params["support_email"] {
+		t.Fatalf("Email: expected (%s) found (%s)", params["support_email"], tenant.Signup.Account.SupportEmail)
+	}
+
+	if tenant.Signup.Account.OrgName != params["org_name"] {
+		t.Fatalf("OrgName: expected (%s) found (%s)", params["org_name"], tenant.Signup.Account.OrgName)
+	}
+}
+
+func TestUpdateTenantErrors(t *testing.T) {
+	op := func(c *ThreeScaleClient) error {
+		tenantID := int64(42)
+		params := Params{
+			"support_email": "admin@corp24.com",
+			"org_name":      "Corp24",
+		}
+		_, err := c.UpdateTenant(tenantID, params)
+		return err
+	}
+	helperClientError(t, op)
+}
+
+func TestDeleteTenant(t *testing.T) {
+	accessToken := "someAccessToken"
+	tenantID := int64(42)
+	tests := []struct {
+		Name             string
+		ErrorExpected    bool
+		ExpectedErrorMsg string
+		HTTPStatusCode   int
+		BodyReader       io.Reader
+	}{
+		{"HappyPathTest", false, "", 200, strings.NewReader("")},
+		{"UnexpectedHTTPStatusCode", true, "Test Error", 400, strings.NewReader(`{"error": "Test Error"}`)},
+	}
+
+	for _, tt := range tests {
 		t.Run(tt.Name, func(subTest *testing.T) {
 			httpClient := NewTestClient(func(req *http.Request) *http.Response {
-				bodyReader := bytes.NewReader(helperLoadBytes(subTest, tt.ResponseBodyFixture))
+				if req.Method != http.MethodDelete {
+					subTest.Fatalf("wrong http method called for create tenant endpoint")
+				}
+
+				p := req.URL.Path
+				if p != fmt.Sprintf(tenantRead, tenantID) {
+					subTest.Fatalf("Path: expected (%s) found (%s)", fmt.Sprintf(tenantRead, tenantID), p)
+				}
+
+				basicAuthValue, err := fetchBasicAuthHeader(req)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if basicAuthValue != basicAuth("", accessToken) {
+					t.Fatalf("Expected access token not found")
+				}
 
 				return &http.Response{
 					StatusCode: tt.HTTPStatusCode,
-					Body:       ioutil.NopCloser(bodyReader),
+					Body:       ioutil.NopCloser(tt.BodyReader),
 					Header:     make(http.Header),
 				}
 			})
-			c := NewThreeScale(NewTestAdminPortal(t),credential, httpClient)
-			_, err := c.CreateTenant(orgName, userName, email, password)
-			if err == nil {
-				subTest.Fatalf("create tenant did not return error")
+			c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
+			err := c.DeleteTenant(tenantID)
+
+			if tt.ErrorExpected {
+				if err == nil {
+					subTest.Fatalf("client did not return error")
+				}
+				apiError, ok := err.(ApiErr)
+				if !ok {
+					subTest.Fatalf("expected ApiErr error type")
+				}
+
+				if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
+					subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
+				}
+			} else {
+				if err != nil {
+					t.Fatal(err)
+				}
 			}
 
-			apiError, ok := err.(ApiErr)
-			if !ok {
-				subTest.Fatalf("expected ApiErr error type")
-			}
-
-			if !strings.Contains(apiError.Error(), tt.ExpectedErrorMsg) {
-				subTest.Fatalf("got: %s, expected: %s", apiError.Error(), tt.ErrorMsg)
-			}
 		})
 	}
 }

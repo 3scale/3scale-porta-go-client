@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	userActivate = "/admin/api/accounts/%s/users/%s/activate.xml"
+	userActivate = "/admin/api/accounts/%s/users/%s/activate.json"
 )
 
 // ActivateUser activates user of a given account from pending state to active
@@ -29,7 +29,7 @@ func (c *ThreeScaleClient) ActivateUser(accountID, userID string) error {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return handleXMLErrResp(resp)
+		return handleJsonErrResp(resp)
 	}
 
 	return nil
