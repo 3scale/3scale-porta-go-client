@@ -30,11 +30,10 @@ func (c *ThreeScaleClient) CreateMappingRule(
 	}
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return mr, err
 	}
+	defer resp.Body.Close()
 
 	err = handleXMLResp(resp, http.StatusCreated, &mr)
 	return mr, err

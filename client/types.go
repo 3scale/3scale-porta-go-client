@@ -24,23 +24,32 @@ type ThreeScaleClient struct {
 
 // Application - API response for create app endpoint
 type Application struct {
-	Name                    xml.Name `xml:"application"`
-	ID                      string   `xml:"id"`
-	CreatedAt               string   `xml:"created_at"`
-	UpdatedAt               string   `xml:"updated_at"`
-	State                   string   `xml:"state"`
-	UserAccountID           string   `xml:"user_account_id"`
-	FirstTrafficAt          string   `xml:"first_traffic_at"`
-	FirstDailyTrafficAt     string   `xml:"first_daily_traffic_at"`
-	EndUserRequired         string   `xml:"end_user_required"`
-	ServiceID               string   `xml:"service_id"`
-	UserKey                 string   `xml:"user_key"`
-	ProviderVerificationKey string   `xml:"provider_verification_key"`
-	Plan                    Plan     `xml:"plan"`
-	AppName                 string   `xml:"name"`
-	Description             string   `xml:"description"`
-	ExtraFields             string   `xml:"extra_fields"`
-	Error                   string   `xml:"error,omitempty"`
+	ID                      int64  `json:"id"`
+	CreatedAt               string `json:"created_at"`
+	UpdatedAt               string `json:"updated_at"`
+	State                   string `json:"state"`
+	UserAccountID           string `json:"user_account_id"`
+	FirstTrafficAt          string `json:"first_traffic_at"`
+	FirstDailyTrafficAt     string `json:"first_daily_traffic_at"`
+	EndUserRequired         bool   `json:"end_user_required"`
+	ServiceID               int64  `json:"service_id"`
+	UserKey                 string `json:"user_key"`
+	ProviderVerificationKey string `json:"provider_verification_key"`
+	PlanID                  int64  `json:"plan_id"`
+	AppName                 string `json:"name"`
+	Description             string `json:"description"`
+	ExtraFields             string `json:"extra_fields"`
+	Error                   string `json:"error,omitempty"`
+}
+
+// ApplicationElem - Holds a intenal application element
+type ApplicationElem struct {
+	Application Application `json:"application"`
+}
+
+// ApplicationList - Holds a list of applications
+type ApplicationList struct {
+	Applications []ApplicationElem `json:"applications"`
 }
 
 // ApplicationPlansList - Holds a list of application plans

@@ -174,7 +174,7 @@ func handleJsonErrResp(resp *http.Response) error {
 
 	msg := "error"
 	for _, v := range errMap {
-		msg = fmt.Sprintf("%s - %s ", msg, v)
+		msg = fmt.Sprintf("%s - %s", msg, v)
 	}
 
 	return createApiErr(resp.StatusCode, msg)

@@ -1,0 +1,49 @@
+{
+  "applications": [
+    {
+      "application": {
+        "id": 146,
+        "state": "live",
+        "enabled": true,
+        "end_user_required": false,
+        "created_at": "2019-02-08T18:23:04Z",
+        "updated_at": "2019-02-08T18:23:04Z",
+        "service_id": 1,
+        "plan_id": 4,
+        "account_id": 50,
+        "first_traffic_at": null,
+        "first_daily_traffic_at": null,
+        "user_key": "4e7b7b09fb75bcb3f72459a336100dab",
+        "provider_verification_key": "49aa56597c7567d188613da732c1be2e",
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/50/applications/146"
+          },
+          {
+            "rel": "service",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/services/1"
+          },
+          {
+            "rel": "account",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/50"
+          },
+          {
+            "rel": "plan",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/services/1/application_plans/4"
+          },
+          {
+            "rel": "keys",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/50/applications/146/keys"
+          },
+          {
+            "rel": "referrer_filters",
+            "href": "https://master.amp24.127.0.0.1.nip.io/admin/api/accounts/50/applications/146/referrer_filters"
+          }
+        ],
+        "name": "API signup",
+        "description": "API signup"
+      }
+    }
+  ]
+}
