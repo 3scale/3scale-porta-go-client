@@ -8,7 +8,7 @@ import (
 )
 
 // CreateMetric - Creates a metric on a service. All metrics are scoped by service.
-func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name string, unit string) (Metric, error) {
+func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name string, description string, unit string) (Metric, error) {
 	var m Metric
 
 	ep := genMetricCreateListEp(svcId)
@@ -17,6 +17,7 @@ func (c *ThreeScaleClient) CreateMetric(accessToken string, svcId string, name s
 	values.Add("access_token", accessToken)
 	values.Add("service_id", svcId)
 	values.Add("friendly_name", name)
+	values.Add("description", description)
 	values.Add("unit", unit)
 
 	body := strings.NewReader(values.Encode())

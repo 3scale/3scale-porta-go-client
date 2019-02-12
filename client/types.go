@@ -111,6 +111,7 @@ type Plan struct {
 	State              string   `xml:"state"`
 	ServiceID          string   `xml:"service_id"`
 	EndUserRequired    string   `xml:"end_user_required"`
+	ApprovalRequired   string   `xml:"approval_required"`
 	SetupFee           string   `xml:"setup_fee"`
 	CostPerMonth       string   `xml:"cost_per_month"`
 	TrialPeriodDays    string   `xml:"trial_period_days"`
@@ -144,12 +145,15 @@ type Proxy struct {
 	CreatedAt               string   `xml:"created_at"`
 	UpdatedAt               string   `xml:"updated_at"`
 	LockVersion             string   `xml:"lock_version"`
+	OidcIssuerEndpoint      string   `xml:"oidc_issuer_endpoint"`
 }
 
 type Service struct {
 	ID                          string     `xml:"id"`
 	AccountID                   string     `xml:"account_id"`
 	Name                        string     `xml:"name"`
+	Description                 string     `xml:"description"`
+	DeploymentOption            string     `xml:"deployment_option"`
 	State                       string     `xml:"state"`
 	SystemName                  string     `xml:"system_name"`
 	BackendVersion              string     `xml:"backend_version"`
