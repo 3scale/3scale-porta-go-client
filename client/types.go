@@ -18,7 +18,7 @@ type AdminPortal struct {
 // ThreeScaleClient interacts with 3scale Service Management API
 type ThreeScaleClient struct {
 	adminPortal *AdminPortal
-	credential string
+	credential  string
 	httpClient  *http.Client
 }
 
@@ -343,6 +343,8 @@ type Account struct {
 	State        string `json:"state"`
 	OrgName      string `json:"org_name"`
 	SupportEmail string `json:"support_email"`
+	AdminDomain  string `json:"admin_domain"`
+	Domain       string `json:"domain"`
 }
 
 type AccountElem struct {

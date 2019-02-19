@@ -49,6 +49,65 @@ func TestListAccountsOk(t *testing.T) {
 	if len(accountList.Accounts) != expectedNumAccounts {
 		t.Fatalf("expected number of accounts was %d", expectedNumAccounts)
 	}
+
+	attrTests := []struct {
+		Name          string
+		ValidateParam func(account Account) bool
+		ErrorMsg      string
+	}{
+		{
+			Name: "testID",
+			ValidateParam: func(account Account) bool {
+				return account.ID == 2
+			},
+			ErrorMsg: "ID did not match",
+		},
+		{
+			Name: "testState",
+			ValidateParam: func(account Account) bool {
+				return account.State == "approved"
+			},
+			ErrorMsg: "STATE did not match",
+		},
+		{
+			Name: "testOrgName",
+			ValidateParam: func(account Account) bool {
+				return account.OrgName == "Provider Name"
+			},
+			ErrorMsg: "OrgName did not match",
+		},
+		{
+			Name: "testSupportEmail",
+			ValidateParam: func(account Account) bool {
+				return account.SupportEmail == "admin@3scale.amp24.127.0.0.1.nip.io"
+			},
+			ErrorMsg: "SupportEmail did not match",
+		},
+		{
+			Name: "testAdminDomain",
+			ValidateParam: func(account Account) bool {
+				return account.AdminDomain == "3scale-admin.amp24.127.0.0.1.nip.io"
+			},
+			ErrorMsg: "AdminDomain did not match",
+		},
+		{
+			Name: "testDomain",
+			ValidateParam: func(account Account) bool {
+				return account.Domain == "3scale.amp24.127.0.0.1.nip.io"
+			},
+			ErrorMsg: "Domain did not match",
+		},
+	}
+
+	account := accountList.Accounts[1].Account
+
+	for _, tt := range attrTests {
+		t.Run(tt.Name, func(subTest *testing.T) {
+			if !tt.ValidateParam(account) {
+				subTest.Fatalf(tt.ErrorMsg)
+			}
+		})
+	}
 }
 
 func TestListAccountsErrors(t *testing.T) {
