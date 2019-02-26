@@ -48,7 +48,11 @@ func (c *ThreeScaleClient) UpdateAppPlan(svcId string, appPlanId string, name st
 	values := url.Values{}
 	values.Add("service_id", svcId)
 	values.Add("name", name)
-	values.Add("state_event", stateEvent)
+
+	if stateEvent != "" {
+		values.Add("state_event", stateEvent)
+	}
+
 	for k, v := range params {
 		values.Add(k, v)
 	}
