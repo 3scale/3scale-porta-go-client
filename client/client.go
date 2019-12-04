@@ -110,7 +110,11 @@ func verifyUrl(urlToCheck string) (*url.URL, error) {
 	url2, err := url.ParseRequestURI(urlToCheck)
 	if err == nil {
 		if url2.Scheme != "http" && url2.Scheme != "https" {
-			err = fmt.Errorf("unsupported schema %s passed to adminPortal", url2.Scheme)
+			return url2, fmt.Errorf("unsupported schema %s passed to adminPortal", url2.Scheme)
+		}
+
+		if url2.Hostname() == "" {
+			return url2, fmt.Errorf("hostname empty after parsing")
 		}
 
 	}
