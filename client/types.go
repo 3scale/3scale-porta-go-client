@@ -318,6 +318,8 @@ type ProxyRule struct {
 	RedirectURL           interface{}   `json:"redirect_url"`
 	Parameters            []string      `json:"parameters"`
 	QuerystringParameters Configuration `json:"querystring_parameters"`
+	Position              int           `json:"position,omitempty"`
+	Last                  bool          `json:"last,omitempty"`
 }
 
 type Params map[string]string
