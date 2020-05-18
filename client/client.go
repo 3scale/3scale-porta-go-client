@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 )
@@ -170,18 +171,37 @@ func handleXMLErrResp(resp *http.Response) error {
 // handleJsonErrResp decodes a JSON response from 3scale system
 // into an error of type APiErr
 func handleJsonErrResp(resp *http.Response) error {
-	var errMap map[string]string
+	switch resp.StatusCode {
+	case http.StatusUnprocessableEntity:
+		return parseUnprocessableEntityError(resp)
+	default:
+		return parseUnexpectedError(resp)
+	}
+}
 
-	if err := json.NewDecoder(resp.Body).Decode(&errMap); err != nil {
+func parseUnexpectedError(resp *http.Response) error {
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil
+	}
+	return createApiErr(resp.StatusCode, string(body))
+}
+
+func parseUnprocessableEntityError(resp *http.Response) error {
+	errObj := struct {
+		Errors map[string][]string `json:"errors"`
+	}{}
+
+	if err := json.NewDecoder(resp.Body).Decode(&errObj); err != nil {
 		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
 	}
 
-	msg := "error"
-	for _, v := range errMap {
-		msg = fmt.Sprintf("%s - %s", msg, v)
+	msg, err := json.Marshal(errObj.Errors)
+	if err != nil {
+		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
 	}
 
-	return createApiErr(resp.StatusCode, msg)
+	return createApiErr(resp.StatusCode, string(msg))
 }
 
 func createApiErr(statusCode int, message string) ApiErr {

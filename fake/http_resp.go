@@ -24,8 +24,16 @@ func CreateAppError() *http.Response {
 
 func GetProxyConfigLatestSuccess() *http.Response {
 	return &http.Response{
-		StatusCode: 200,
+		StatusCode: http.StatusOK,
 		Body:       ioutil.NopCloser(bytes.NewBufferString(GetProxyConfigLatestJson())),
+		Header:     make(http.Header),
+	}
+}
+
+func CreateStatusUnprocessableEntityError() *http.Response {
+	return &http.Response{
+		StatusCode: http.StatusUnprocessableEntity,
+		Body:       ioutil.NopCloser(bytes.NewBufferString(CreateUnprocessableEntityError())),
 		Header:     make(http.Header),
 	}
 }
