@@ -158,6 +158,8 @@ type Proxy struct {
 	OidcIssuerEndpoint      string   `xml:"oidc_issuer_endpoint"`
 }
 
+// Deprecated
+// use Product instead
 type Service struct {
 	ID                          string     `xml:"id"`
 	AccountID                   string     `xml:"account_id"`
@@ -372,4 +374,34 @@ type Signup struct {
 
 type Tenant struct {
 	Signup Signup `json:"signup"`
+}
+
+type ProductItem struct {
+	ID                        int64  `json:"id"`
+	Name                      string `json:"name"`
+	Description               string `json:"description"`
+	DeploymentOption          string `json:"deployment_option"`
+	State                     string `json:"state"`
+	SystemName                string `json:"system_name"`
+	BackendVersion            string `json:"backend_version"`
+	SupportEmail              string `json:"support_email"`
+	CreatedAt                 string `json:"created_at"`
+	UpdatedAt                 string `json:"updated_at"`
+	IntentionsRequired        bool   `json:"intentions_required"`
+	BuyersManageApps          bool   `json:"buyers_manage_apps"`
+	BuyersManageKeys          bool   `json:"buyers_manage_keys"`
+	ReferrerFiltersRequired   bool   `json:"referrer_filters_required"`
+	CustomKeysEnabled         bool   `json:"custom_keys_enabled"`
+	BuyerKeyRegenerateEnabled bool   `json:"buyer_key_regenerate_enabled"`
+	MandatoryAppKey           bool   `json:"mandatory_app_key"`
+	BuyerCanSelectPlan        bool   `json:"buyer_can_select_plan"`
+	BuyerPlanChangePermission string `json:"buyer_plan_change_permission"`
+}
+
+type Product struct {
+	Element ProductItem `json:"service"`
+}
+
+type ProductList struct {
+	Products []Product `json:"services"`
 }
