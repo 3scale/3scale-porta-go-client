@@ -28,7 +28,7 @@ func TestCreateApp(t *testing.T) {
 		{
 			name:      "Test app creation fail",
 			returnErr: true,
-			expectErr: "error calling 3scale system - reason: error - Your access token does not have the correct permissions - code: 403",
+			expectErr: `error calling 3scale system - reason: { "error": "Your access token does not have the correct permissions" } - code: 403`,
 		},
 		{
 			name: "Test app creation success",

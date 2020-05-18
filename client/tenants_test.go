@@ -12,16 +12,17 @@ import (
 
 type clientTenantOperation func(*ThreeScaleClient) error
 
-func helperClientError(t *testing.T, op clientTenantOperation) {
+func helperClientError(t *testing.T, op clientTenantOperation, successStatusCode int) {
 	errorTests := []struct {
 		Name                string
 		ResponseBodyFixture string
 		ExpectedErrorMsg    string
 		HTTPStatusCode      int
 	}{
-		{"CorruptedJsonErrorTest", "accounts_wrong_format_fixture.json", "decoding error - unexpected EOF", 200},
-		{"WrongFormatErrorTest", "xml_format_fixture.xml", "decoding error - invalid character", 200},
-		{"UnexpectedHTTPStatusCode", "error_response_fixture.json", "Test Error", 400},
+		{"CorruptedJsonErrorTest", "accounts_wrong_format_fixture.json", "decoding error - unexpected EOF", successStatusCode},
+		{"WrongFormatErrorTest", "xml_format_fixture.xml", "decoding error - invalid character", successStatusCode},
+		{"BadRequestHTTPResponse", "bad_request_error_response_fixture.json", "Test Error", http.StatusBadRequest},
+		{"StatusUnprocessableEntityResponse", "unprocessable_error_response_fixture.json", `error calling 3scale system - reason: {"system_name":["has already been taken"]} - code: 422`, http.StatusUnprocessableEntity},
 	}
 
 	for _, tt := range errorTests {
@@ -123,7 +124,7 @@ func TestCreateTenantErrors(t *testing.T) {
 		_, err := c.CreateTenant(orgName, userName, email, password)
 		return err
 	}
-	helperClientError(t, op)
+	helperClientError(t, op, http.StatusCreated)
 }
 
 func TestShowTenantOk(t *testing.T) {
@@ -182,7 +183,7 @@ func TestShowTenantErrors(t *testing.T) {
 		_, err := c.ShowTenant(tenantID)
 		return err
 	}
-	helperClientError(t, op)
+	helperClientError(t, op, http.StatusOK)
 }
 
 func TestUpdateTenantOk(t *testing.T) {
@@ -264,7 +265,7 @@ func TestUpdateTenantErrors(t *testing.T) {
 		_, err := c.UpdateTenant(tenantID, params)
 		return err
 	}
-	helperClientError(t, op)
+	helperClientError(t, op, http.StatusOK)
 }
 
 func TestDeleteTenant(t *testing.T) {

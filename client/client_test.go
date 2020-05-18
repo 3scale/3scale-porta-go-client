@@ -37,10 +37,51 @@ func TestHandleJsonResp(t *testing.T) {
 	if err == nil {
 		t.Fatal("expected error not nil")
 	}
-	if err.Error() != "error calling 3scale system - reason: error - invalid environment - code: 400" {
-		t.Fatal("unexpected decoding or error message")
+	expectedErr := `error calling 3scale system - reason: {"error": "invalid environment"} - code: 400`
+	if err.Error() != expectedErr {
+		t.Fatalf("Expected error: [%s]; got [%s]", expectedErr, err.Error())
 	}
 
+}
+
+func TestHandleJsonErrResp(mainT *testing.T) {
+	inputs := []struct {
+		name             string
+		responseErr      *http.Response
+		expectedCode     int
+		expectedErrorMsg string
+	}{
+		{"unprocessableEntityError", fake.CreateStatusUnprocessableEntityError(),
+			http.StatusUnprocessableEntity,
+			`error calling 3scale system - reason: {"system_name":["has already been taken"]} - code: 422`,
+		},
+		{"ForbidenError", fake.CreateAppError(),
+			http.StatusForbidden,
+			`error calling 3scale system - reason: { "error": "Your access token does not have the correct permissions" } - code: 403`,
+		},
+	}
+
+	for _, input := range inputs {
+		mainT.Run(input.name, func(t *testing.T) {
+			err := handleJsonErrResp(input.responseErr)
+			if err == nil {
+				t.Fatal("error expected")
+			}
+
+			apiErr, ok := err.(ApiErr)
+			if !ok {
+				t.Fatalf("error is not ApiErr type: %T", err)
+			}
+
+			if apiErr.Code() != input.expectedCode {
+				t.Fatalf("Expected code: [%d]; got [%d]", input.expectedCode, apiErr.Code())
+			}
+
+			if err.Error() != input.expectedErrorMsg {
+				t.Fatalf("Expected error: [%s]; got [%s]", input.expectedErrorMsg, err.Error())
+			}
+		})
+	}
 }
 
 type RoundTripFunc func(req *http.Request) *http.Response

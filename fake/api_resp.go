@@ -178,3 +178,7 @@ func GetProxyConfigLatestJson() string {
  }
 }`
 }
+
+func CreateUnprocessableEntityError() string {
+	return `{"errors":{"system_name":["has already been taken"]}}`
+}
