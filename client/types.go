@@ -405,3 +405,22 @@ type Product struct {
 type ProductList struct {
 	Products []Product `json:"services"`
 }
+
+type BackendApiItem struct {
+	ID              int64  `json:"id"`
+	Name            string `json:"name"`
+	SystemName      string `json:"system_name"`
+	Description     string `json:"description"`
+	PrivateEndpoint string `json:"private_endpoint"`
+	AccountID       int64  `json:"account_id"`
+	CreatedAt       string `json:"created_at"`
+	UpdatedAt       string `json:"updated_at"`
+}
+
+type BackendApi struct {
+	Element BackendApiItem `json:"backend_api"`
+}
+
+type BackendApiList struct {
+	Backends []BackendApi `json:"backend_apis"`
+}
