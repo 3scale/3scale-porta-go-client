@@ -2,10 +2,12 @@ package client
 
 import (
 	"bytes"
-	"github.com/3scale/3scale-porta-go-client/fake"
 	"io/ioutil"
 	"net/http"
+	"strings"
 	"testing"
+
+	"github.com/3scale/3scale-porta-go-client/fake"
 )
 
 func TestNewAdminPortal(t *testing.T) {
@@ -42,6 +44,18 @@ func TestHandleJsonResp(t *testing.T) {
 		t.Fatalf("Expected error: [%s]; got [%s]", expectedErr, err.Error())
 	}
 
+}
+
+func TestHandleJsonRespNilBody(t *testing.T) {
+	emptyResp := &http.Response{
+		StatusCode: http.StatusOK,
+		Body:       ioutil.NopCloser(strings.NewReader("")),
+		Header:     make(http.Header),
+	}
+	err := handleJsonResp(emptyResp, http.StatusOK, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestHandleJsonErrResp(mainT *testing.T) {
