@@ -149,6 +149,10 @@ func handleJsonResp(resp *http.Response, expectCode int, decodeInto interface{})
 		return handleJsonErrResp(resp)
 	}
 
+	if decodeInto == nil {
+		return nil
+	}
+
 	if err := json.NewDecoder(resp.Body).Decode(decodeInto); err != nil {
 		return createApiErr(resp.StatusCode, createDecodingErrorMessage(err))
 	}
