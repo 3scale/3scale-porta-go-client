@@ -244,3 +244,268 @@ func TestUpdateBackendApi(t *testing.T) {
 		t.Fatalf("backend_api privateEndpoint does not match. Expected [%s]; got [%s]", params["name"], backendAPI.Element.Name)
 	}
 }
+
+func TestListBackendApiMethods(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		endpoint           = fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		methodList := &MethodList{
+			Methods: []Method{
+				{
+					Element: MethodItem{
+						ID:         1,
+						Name:       "method01",
+						SystemName: "method01",
+					},
+				},
+				{
+					Element: MethodItem{
+						ID:         2,
+						Name:       "method02",
+						SystemName: "method02",
+					},
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(methodList)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	list, err := c.ListBackendapiMethods(backendapiID, hitsID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if list == nil {
+		t.Fatal("backend method list returned nil")
+	}
+
+	if len(list.Methods) != 2 {
+		t.Fatalf("Then number of backend_api method's does not match. Expected [%d]; got [%d]", 2, len(list.Methods))
+	}
+}
+
+func TestCreateBackendApiMethod(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		endpoint           = fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
+		params             = Params{"friendly_name": "method5"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		method := &Method{
+			Element: MethodItem{
+				ID:         10,
+				Name:       params["friendly_name"],
+				SystemName: params["friendly_name"],
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(method)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateBackendApiMethod(backendapiID, hitsID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backend method create returned nil")
+	}
+
+	if obj.Element.ID != 10 {
+		t.Fatalf("backend_api method ID does not match. Expected [%d]; got [%d]", 10, obj.Element.ID)
+	}
+
+	if obj.Element.Name != params["friendly_name"] {
+		t.Fatalf("backend_api privateEndpoint does not match. Expected [%s]; got [%s]", params["friendly_name"], obj.Element.Name)
+	}
+
+}
+
+func TestDeleteBackendApiMethod(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		methodID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteBackendApiMethod(backendapiID, hitsID, methodID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReadBackendApiMethod(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		methodID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		method := &Method{
+			Element: MethodItem{
+				ID:         methodID,
+				Name:       "someName",
+				SystemName: "someName2",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(method)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.BackendApiMethod(backendapiID, hitsID, methodID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi method returned nil")
+	}
+
+	if obj.Element.ID != methodID {
+		t.Fatalf("backend_api ID does not match. Expected [%d]; got [%d]", methodID, obj.Element.ID)
+	}
+}
+
+func TestUpdateBackendApiMethod(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		methodID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+		params             = Params{"description": "newDescr"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		method := &Method{
+			Element: MethodItem{
+				ID:          methodID,
+				Name:        "someName",
+				SystemName:  "someName2",
+				Description: params["description"],
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(method)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateBackendApiMethod(backendapiID, hitsID, methodID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi method returned nil")
+	}
+
+	if obj.Element.ID != methodID {
+		t.Fatalf("backend_api method ID does not match. Expected [%d]; got [%d]", methodID, obj.Element.ID)
+	}
+
+	if obj.Element.Description != params["description"] {
+		t.Fatalf("backend_api method description does not match. Expected [%s]; got [%s]", params["description"], obj.Element.Description)
+	}
+}

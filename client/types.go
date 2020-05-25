@@ -424,3 +424,23 @@ type BackendApi struct {
 type BackendApiList struct {
 	Backends []BackendApi `json:"backend_apis"`
 }
+
+// MethodItem - Defines the method object
+type MethodItem struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"friendly_name"`
+	SystemName  string `json:"system_name"`
+	Description string `json:"description"`
+	ParentID    int64  `json:"parent_id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+type Method struct {
+	Element MethodItem `json:"method"`
+}
+
+// MethodList - Holds a list of Methods
+type MethodList struct {
+	Methods []Method `json:"methods"`
+}

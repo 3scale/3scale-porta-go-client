@@ -8,8 +8,10 @@ import (
 )
 
 const (
-	backendListResourceEndpoint = "/admin/api/backend_apis.json"
-	backendResourceEndpoint     = "/admin/api/backend_apis/%d.json"
+	backendListResourceEndpoint       = "/admin/api/backend_apis.json"
+	backendResourceEndpoint           = "/admin/api/backend_apis/%d.json"
+	backendMethodListResourceEndpoint = "/admin/api/backend_apis/%d/metrics/%d/methods.json"
+	backendMethodResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d/methods/%d.json"
 )
 
 // ListBackends List existing backends
@@ -116,4 +118,112 @@ func (c *ThreeScaleClient) UpdateBackendApi(id int64, params Params) (*BackendAp
 	backendAPI := &BackendApi{}
 	err = handleJsonResp(resp, http.StatusOK, backendAPI)
 	return backendAPI, err
+}
+
+// ListBackendapiMethods List existing backend methods
+func (c *ThreeScaleClient) ListBackendapiMethods(backendapiID, hitsID int64) (*MethodList, error) {
+	endpoint := fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := &MethodList{}
+	err = handleJsonResp(resp, http.StatusOK, list)
+	return list, err
+}
+
+// CreateBackendApiMethod Create 3scale Backend method
+func (c *ThreeScaleClient) CreateBackendApiMethod(backendapiID, hitsID int64, params Params) (*Method, error) {
+	endpoint := fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &Method{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteBackendApiMethod Delete 3scale Backend method
+func (c *ThreeScaleClient) DeleteBackendApiMethod(backendapiID, hitsID, methodID int64) error {
+	endpoint := fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// BackendApiMethod Read 3scale Backend method
+func (c *ThreeScaleClient) BackendApiMethod(backendapiID, hitsID, methodID int64) (*Method, error) {
+	endpoint := fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &Method{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateBackendApiMethod Update 3scale Backend method
+func (c *ThreeScaleClient) UpdateBackendApiMethod(backendapiID, hitsID, methodID int64, params Params) (*Method, error) {
+	endpoint := fmt.Sprintf(backendMethodResourceEndpoint, backendapiID, hitsID, methodID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &Method{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
 }
