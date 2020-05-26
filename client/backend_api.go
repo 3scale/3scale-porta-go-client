@@ -12,6 +12,8 @@ const (
 	backendResourceEndpoint           = "/admin/api/backend_apis/%d.json"
 	backendMethodListResourceEndpoint = "/admin/api/backend_apis/%d/metrics/%d/methods.json"
 	backendMethodResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d/methods/%d.json"
+	backendMetricListResourceEndpoint = "/admin/api/backend_apis/%d/metrics.json"
+	backendMetricResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d.json"
 )
 
 // ListBackends List existing backends
@@ -224,6 +226,114 @@ func (c *ThreeScaleClient) UpdateBackendApiMethod(backendapiID, hitsID, methodID
 	defer resp.Body.Close()
 
 	item := &Method{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ListBackendapiMetrics List existing backend metric
+func (c *ThreeScaleClient) ListBackendapiMetrics(backendapiID int64) (*MetricJSONList, error) {
+	endpoint := fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := &MetricJSONList{}
+	err = handleJsonResp(resp, http.StatusOK, list)
+	return list, err
+}
+
+// CreateBackendApiMetric Create 3scale Backend metric
+func (c *ThreeScaleClient) CreateBackendApiMetric(backendapiID int64, params Params) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteBackendApiMetric Delete 3scale Backend metric
+func (c *ThreeScaleClient) DeleteBackendApiMetric(backendapiID, metricID int64) error {
+	endpoint := fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// BackendApiMetric Read 3scale Backend metric
+func (c *ThreeScaleClient) BackendApiMetric(backendapiID, metricID int64) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateBackendApiMetric Update 3scale Backend metric
+func (c *ThreeScaleClient) UpdateBackendApiMetric(backendapiID, metricID int64, params Params) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }

@@ -444,3 +444,24 @@ type Method struct {
 type MethodList struct {
 	Methods []Method `json:"methods"`
 }
+
+// MetricItem - Defines the metric object serialized/Unserialized in json format
+type MetricItem struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"friendly_name"`
+	SystemName  string `json:"system_name"`
+	Description string `json:"description"`
+	Unit        string `json:"unit"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+// MetricJSON - Holds a obj Metric serialized/Unserialized in json format
+type MetricJSON struct {
+	Element MetricItem `json:"metric"`
+}
+
+// MetricJSONList - Holds a list of Metrics serialized/Unserialized in json format
+type MetricJSONList struct {
+	Metrics []MetricJSON `json:"metrics"`
+}

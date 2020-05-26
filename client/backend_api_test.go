@@ -361,7 +361,7 @@ func TestCreateBackendApiMethod(t *testing.T) {
 	}
 
 	if obj.Element.Name != params["friendly_name"] {
-		t.Fatalf("backend_api privateEndpoint does not match. Expected [%s]; got [%s]", params["friendly_name"], obj.Element.Name)
+		t.Fatalf("backend_api method name does not match. Expected [%s]; got [%s]", params["friendly_name"], obj.Element.Name)
 	}
 
 }
@@ -507,5 +507,265 @@ func TestUpdateBackendApiMethod(t *testing.T) {
 
 	if obj.Element.Description != params["description"] {
 		t.Fatalf("backend_api method description does not match. Expected [%s]; got [%s]", params["description"], obj.Element.Description)
+	}
+}
+
+func TestListBackendApiMetrics(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		endpoint           = fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		list := &MetricJSONList{
+			Metrics: []MetricJSON{
+				{
+					Element: MetricItem{
+						ID:         1,
+						Name:       "metric01",
+						SystemName: "metric01",
+					},
+				},
+				{
+					Element: MetricItem{
+						ID:         2,
+						Name:       "metric02",
+						SystemName: "metric02",
+					},
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	list, err := c.ListBackendapiMetrics(backendapiID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if list == nil {
+		t.Fatal("backend metric list returned nil")
+	}
+
+	if len(list.Metrics) != 2 {
+		t.Fatalf("Then number of backend_api metric's does not match. Expected [%d]; got [%d]", 2, len(list.Metrics))
+	}
+}
+
+func TestCreateBackendApiMetric(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		endpoint           = fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
+		params             = Params{"friendly_name": "metric05", "unit": "1"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		item := &MetricJSON{
+			Element: MetricItem{
+				ID:         10,
+				Name:       params["friendly_name"],
+				SystemName: params["friendly_name"],
+				Unit:       params["unit"],
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateBackendApiMetric(backendapiID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backend metric create returned nil")
+	}
+
+	if obj.Element.ID != 10 {
+		t.Fatalf("backend_api metric ID does not match. Expected [%d]; got [%d]", 10, obj.Element.ID)
+	}
+
+	if obj.Element.Name != params["friendly_name"] {
+		t.Fatalf("backend_api metric name does not match. Expected [%s]; got [%s]", params["friendly_name"], obj.Element.Name)
+	}
+}
+
+func TestDeleteBackendApiMetric(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		metricID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteBackendApiMetric(backendapiID, metricID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReadBackendApiMetric(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		metricID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		item := &MetricJSON{
+			Element: MetricItem{
+				ID:         metricID,
+				Name:       "someName",
+				SystemName: "someName2",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.BackendApiMetric(backendapiID, metricID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi metric returned nil")
+	}
+
+	if obj.Element.ID != metricID {
+		t.Fatalf("backend_api metric ID does not match. Expected [%d]; got [%d]", metricID, obj.Element.ID)
+	}
+}
+
+func TestUpdateBackendApiMetric(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		metricID     int64 = 123325
+		endpoint           = fmt.Sprintf(backendMetricResourceEndpoint, backendapiID, metricID)
+		params             = Params{"description": "newDescr"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		item := &MetricJSON{
+			Element: MetricItem{
+				ID:          metricID,
+				Name:        "someName",
+				SystemName:  "someName2",
+				Description: params["description"],
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateBackendApiMetric(backendapiID, metricID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi metric returned nil")
+	}
+
+	if obj.Element.ID != metricID {
+		t.Fatalf("backend_api metric ID does not match. Expected [%d]; got [%d]", metricID, obj.Element.ID)
+	}
+
+	if obj.Element.Description != params["description"] {
+		t.Fatalf("backend_api metric description does not match. Expected [%s]; got [%s]", params["description"], obj.Element.Description)
 	}
 }
