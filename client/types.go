@@ -465,3 +465,26 @@ type MetricJSON struct {
 type MetricJSONList struct {
 	Metrics []MetricJSON `json:"metrics"`
 }
+
+// MappingRuleItem - Defines the mapping rule object serialized/Unserialized in json format
+type MappingRuleItem struct {
+	ID         int64  `json:"id"`
+	MetricID   int64  `json:"metric_id"`
+	Pattern    string `json:"pattern"`
+	HTTPMethod string `json:"http_method"`
+	Delta      int    `json:"delta"`
+	Position   int    `json:"position"`
+	Last       bool   `json:"last"`
+	CreatedAt  string `json:"created_at"`
+	UpdatedAt  string `json:"updated_at"`
+}
+
+// MappingRuleJSON - Holds a MappingRule obj serialized/Unserialized in json format
+type MappingRuleJSON struct {
+	Element MappingRuleItem `json:"mapping_rule"`
+}
+
+// MappingRuleJSONList - Holds a list of MappingRules serialized/Unserialized in json format
+type MappingRuleJSONList struct {
+	MappingRules []MappingRuleJSON `json:"mapping_rules"`
+}

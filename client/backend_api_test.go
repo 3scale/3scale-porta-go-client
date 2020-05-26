@@ -769,3 +769,262 @@ func TestUpdateBackendApiMetric(t *testing.T) {
 		t.Fatalf("backend_api metric description does not match. Expected [%s]; got [%s]", params["description"], obj.Element.Description)
 	}
 }
+
+func TestListBackendApiMappingRules(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		endpoint           = fmt.Sprintf(backendMRListResourceEndpoint, backendapiID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		list := &MappingRuleJSONList{
+			MappingRules: []MappingRuleJSON{
+				{
+					Element: MappingRuleItem{
+						ID:      1,
+						Pattern: "/v1",
+					},
+				},
+				{
+					Element: MappingRuleItem{
+						ID:      2,
+						Pattern: "/v2",
+					},
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	list, err := c.ListBackendapiMappingRules(backendapiID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if list == nil {
+		t.Fatal("backend mapping rule list returned nil")
+	}
+
+	if len(list.MappingRules) != 2 {
+		t.Fatalf("Then number of backend_api mapping rule's does not match. Expected [%d]; got [%d]", 2, len(list.MappingRules))
+	}
+}
+
+func TestCreateBackendApiMappingRule(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		endpoint           = fmt.Sprintf(backendMRListResourceEndpoint, backendapiID)
+		params             = Params{"pattern": "/v1", "http_method": "GET", "metric_id": "12"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         10,
+				Pattern:    params["pattern"],
+				HTTPMethod: params["http_method"],
+				MetricID:   12,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateBackendapiMappingRule(backendapiID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backend mapping rule create returned nil")
+	}
+
+	if obj.Element.ID != 10 {
+		t.Fatalf("backend_api mapping rule ID does not match. Expected [%d]; got [%d]", 10, obj.Element.ID)
+	}
+
+	if obj.Element.Pattern != params["pattern"] {
+		t.Fatalf("backend_api mapping rule pattern does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+	}
+}
+
+func TestDeleteBackendApiMappingRule(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		mrID         int64 = 123325
+		endpoint           = fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteBackendapiMappingRule(backendapiID, mrID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReadBackendApiMappingRule(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		mrID         int64 = 123325
+		endpoint           = fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         mrID,
+				Pattern:    "/v1",
+				HTTPMethod: "GET",
+				MetricID:   123454,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.BackendapiMappingRule(backendapiID, mrID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi mapping rule returned nil")
+	}
+
+	if obj.Element.ID != mrID {
+		t.Fatalf("backend_api mapping rule ID does not match. Expected [%d]; got [%d]", mrID, obj.Element.ID)
+	}
+}
+
+func TestUpdateBackendApiMappingRule(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		mrID         int64 = 123325
+		endpoint           = fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+		params             = Params{"pattern": "/v2"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         mrID,
+				Pattern:    params["pattern"],
+				HTTPMethod: "GET",
+				MetricID:   123454,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateBackendapiMappingRule(backendapiID, mrID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi mapping rule returned nil")
+	}
+
+	if obj.Element.ID != mrID {
+		t.Fatalf("backend_api mapping rule ID does not match. Expected [%d]; got [%d]", mrID, obj.Element.ID)
+	}
+
+	if obj.Element.Pattern != params["pattern"] {
+		t.Fatalf("backend_api mapping rule description does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+	}
+}

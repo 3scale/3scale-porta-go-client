@@ -14,6 +14,8 @@ const (
 	backendMethodResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d/methods/%d.json"
 	backendMetricListResourceEndpoint = "/admin/api/backend_apis/%d/metrics.json"
 	backendMetricResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d.json"
+	backendMRListResourceEndpoint     = "/admin/api/backend_apis/%d/mapping_rules.json"
+	backendMRResourceEndpoint         = "/admin/api/backend_apis/%d/mapping_rules/%d.json"
 )
 
 // ListBackends List existing backends
@@ -334,6 +336,114 @@ func (c *ThreeScaleClient) UpdateBackendApiMetric(backendapiID, metricID int64, 
 	defer resp.Body.Close()
 
 	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ListBackendapiMappingRules List existing backend mapping rules
+func (c *ThreeScaleClient) ListBackendapiMappingRules(backendapiID int64) (*MappingRuleJSONList, error) {
+	endpoint := fmt.Sprintf(backendMRListResourceEndpoint, backendapiID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := &MappingRuleJSONList{}
+	err = handleJsonResp(resp, http.StatusOK, list)
+	return list, err
+}
+
+// CreateBackendapiMappingRule Create 3scale Backend mappingrule
+func (c *ThreeScaleClient) CreateBackendapiMappingRule(backendapiID int64, params Params) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(backendMRListResourceEndpoint, backendapiID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteBackendapiMappingRule Delete 3scale Backend mapping rule
+func (c *ThreeScaleClient) DeleteBackendapiMappingRule(backendapiID, mrID int64) error {
+	endpoint := fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// BackendapiMappingRule Read 3scale Backend mapping rule
+func (c *ThreeScaleClient) BackendapiMappingRule(backendapiID, mrID int64) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateBackendapiMappingRule Update 3scale Backend mapping rule
+func (c *ThreeScaleClient) UpdateBackendapiMappingRule(backendapiID, mrID int64, params Params) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(backendMRResourceEndpoint, backendapiID, mrID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }
