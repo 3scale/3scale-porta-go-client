@@ -488,3 +488,19 @@ type MappingRuleJSON struct {
 type MappingRuleJSONList struct {
 	MappingRules []MappingRuleJSON `json:"mapping_rules"`
 }
+
+// BackendAPIUsageItem - Defines the backend usage object serialized/Unserialized in json format
+type BackendAPIUsageItem struct {
+	ID           int64  `json:"id"`
+	Path         string `json:"path"`
+	ProductID    int64  `json:"service_id"`
+	BackendAPIID int64  `json:"backend_id"`
+}
+
+// BackendAPIUsage - Defines the backend usage object serialized/Unserialized in json format
+type BackendAPIUsage struct {
+	Element BackendAPIUsageItem `json:"backend_usage"`
+}
+
+// BackendAPIUsageList - Holds a list of MappingRules serialized/Unserialized in json format
+type BackendAPIUsageList []BackendAPIUsage

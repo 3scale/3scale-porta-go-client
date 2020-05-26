@@ -1025,6 +1025,260 @@ func TestUpdateBackendApiMappingRule(t *testing.T) {
 	}
 
 	if obj.Element.Pattern != params["pattern"] {
-		t.Fatalf("backend_api mapping rule description does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+		t.Fatalf("backend_api mapping rule pattern does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+	}
+}
+
+func TestListBackendApiUsages(t *testing.T) {
+	var (
+		productID int64 = 98765
+		endpoint        = fmt.Sprintf(backendUsageListResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		list := BackendAPIUsageList{
+			{
+				Element: BackendAPIUsageItem{
+					ID:   1,
+					Path: "/v1",
+				},
+			},
+			{
+				Element: BackendAPIUsageItem{
+					ID:   2,
+					Path: "/v2",
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	list, err := c.ListBackendapiUsages(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if list == nil {
+		t.Fatal("backend usage list returned nil")
+	}
+
+	if len(list) != 2 {
+		t.Fatalf("Then number of backend_api usage's does not match. Expected [%d]; got [%d]", 2, len(list))
+	}
+}
+
+func TestCreateBackendApiUsage(t *testing.T) {
+	var (
+		productID int64 = 98765
+		endpoint        = fmt.Sprintf(backendUsageListResourceEndpoint, productID)
+		params          = Params{"path": "/v1", "backend_api_id": "12345"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		item := &BackendAPIUsage{
+			Element: BackendAPIUsageItem{
+				ID:           10,
+				Path:         params["path"],
+				BackendAPIID: 12345,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateBackendapiUsage(productID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backend usage create returned nil")
+	}
+
+	if obj.Element.ID != 10 {
+		t.Fatalf("backend_api usage ID does not match. Expected [%d]; got [%d]", 10, obj.Element.ID)
+	}
+
+	if obj.Element.Path != params["path"] {
+		t.Fatalf("backend_api usage path does not match. Expected [%s]; got [%s]", params["path"], obj.Element.Path)
+	}
+}
+
+func TestDeleteBackendApiUsage(t *testing.T) {
+	var (
+		productID      int64 = 98765
+		backendUsageID int64 = 123325
+		endpoint             = fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteBackendapiUsage(productID, backendUsageID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReadBackendApiUsage(t *testing.T) {
+	var (
+		productID      int64 = 98765
+		backendUsageID int64 = 123325
+		endpoint             = fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		item := &BackendAPIUsage{
+			Element: BackendAPIUsageItem{
+				ID:           backendUsageID,
+				Path:         "/v1",
+				BackendAPIID: 12345,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.BackendapiUsage(productID, backendUsageID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi usage returned nil")
+	}
+
+	if obj.Element.ID != backendUsageID {
+		t.Fatalf("backend_api usage ID does not match. Expected [%d]; got [%d]", backendUsageID, obj.Element.ID)
+	}
+}
+
+func TestUpdateBackendApiUsage(t *testing.T) {
+	var (
+		productID      int64 = 98765
+		backendUsageID int64 = 123325
+		endpoint             = fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+		params               = Params{"path": "/v2"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		item := &BackendAPIUsage{
+			Element: BackendAPIUsageItem{
+				ID:           backendUsageID,
+				Path:         "/v2",
+				BackendAPIID: 12345,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateBackendapiUsage(productID, backendUsageID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi usage returned nil")
+	}
+
+	if obj.Element.ID != backendUsageID {
+		t.Fatalf("backend_api usage ID does not match. Expected [%d]; got [%d]", backendUsageID, obj.Element.ID)
+	}
+
+	if obj.Element.Path != params["path"] {
+		t.Fatalf("backend_api usage path does not match. Expected [%s]; got [%s]", params["path"], obj.Element.Path)
 	}
 }

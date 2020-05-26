@@ -16,6 +16,8 @@ const (
 	backendMetricResourceEndpoint     = "/admin/api/backend_apis/%d/metrics/%d.json"
 	backendMRListResourceEndpoint     = "/admin/api/backend_apis/%d/mapping_rules.json"
 	backendMRResourceEndpoint         = "/admin/api/backend_apis/%d/mapping_rules/%d.json"
+	backendUsageListResourceEndpoint  = "/admin/api/services/%d/backend_usages.json"
+	backendUsageResourceEndpoint      = "/admin/api/services/%d/backend_usages/%d.json"
 )
 
 // ListBackends List existing backends
@@ -444,6 +446,114 @@ func (c *ThreeScaleClient) UpdateBackendapiMappingRule(backendapiID, mrID int64,
 	defer resp.Body.Close()
 
 	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ListBackendapiUsages List existing backend usages for a given product
+func (c *ThreeScaleClient) ListBackendapiUsages(productID int64) (BackendAPIUsageList, error) {
+	endpoint := fmt.Sprintf(backendUsageListResourceEndpoint, productID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := BackendAPIUsageList{}
+	err = handleJsonResp(resp, http.StatusOK, &list)
+	return list, err
+}
+
+// CreateBackendapiUsage Create 3scale Backend usage
+func (c *ThreeScaleClient) CreateBackendapiUsage(productID int64, params Params) (*BackendAPIUsage, error) {
+	endpoint := fmt.Sprintf(backendUsageListResourceEndpoint, productID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &BackendAPIUsage{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteBackendapiUsage Delete 3scale Backend usage
+func (c *ThreeScaleClient) DeleteBackendapiUsage(productID, backendUsageID int64) error {
+	endpoint := fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// BackendapiUsage Read 3scale Backend usage
+func (c *ThreeScaleClient) BackendapiUsage(productID, backendUsageID int64) (*BackendAPIUsage, error) {
+	endpoint := fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &BackendAPIUsage{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateBackendapiUsage Update 3scale Backend usage
+func (c *ThreeScaleClient) UpdateBackendapiUsage(productID, backendUsageID int64, params Params) (*BackendAPIUsage, error) {
+	endpoint := fmt.Sprintf(backendUsageResourceEndpoint, productID, backendUsageID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &BackendAPIUsage{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }
