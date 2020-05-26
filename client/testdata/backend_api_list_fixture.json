@@ -1,0 +1,40 @@
+{
+  "backend_apis": [
+    {
+      "backend_api": {
+        "id": 45498,
+        "name": "Backend 01",
+        "system_name": "backend_01",
+        "description": "",
+        "private_endpoint": "https://echo-api.3scale.net:443",
+        "account_id": 2445581100447,
+        "created_at": "2019-11-29T17:18:02+01:00",
+        "updated_at": "2020-03-25T15:07:22+01:00"
+      }
+    },
+    {
+      "backend_api": {
+        "id": 51055,
+        "name": "Backend 02",
+        "system_name": "backend_02",
+        "description": "",
+        "private_endpoint": "https://v2.example.com:443",
+        "account_id": 2445581100447,
+        "created_at": "2020-01-21T11:55:06+01:00",
+        "updated_at": "2020-01-28T15:45:25+01:00"
+      }
+    },
+    {
+      "backend_api": {
+        "id": 56913,
+        "name": "PerfToolAPI Backend",
+        "system_name": "PerfToolAPI",
+        "description": "Backend of PerfToolAPI",
+        "private_endpoint": "https://echo-api.3scale.net:443",
+        "account_id": 2445581100447,
+        "created_at": "2020-04-16T12:12:17+02:00",
+        "updated_at": "2020-04-16T12:12:17+02:00"
+      }
+    }
+  ]
+}

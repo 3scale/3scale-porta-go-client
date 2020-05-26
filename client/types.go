@@ -405,3 +405,102 @@ type Product struct {
 type ProductList struct {
 	Products []Product `json:"services"`
 }
+
+type BackendApiItem struct {
+	ID              int64  `json:"id"`
+	Name            string `json:"name"`
+	SystemName      string `json:"system_name"`
+	Description     string `json:"description"`
+	PrivateEndpoint string `json:"private_endpoint"`
+	AccountID       int64  `json:"account_id"`
+	CreatedAt       string `json:"created_at"`
+	UpdatedAt       string `json:"updated_at"`
+}
+
+type BackendApi struct {
+	Element BackendApiItem `json:"backend_api"`
+}
+
+type BackendApiList struct {
+	Backends []BackendApi `json:"backend_apis"`
+}
+
+// MethodItem - Defines the method object
+type MethodItem struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"friendly_name"`
+	SystemName  string `json:"system_name"`
+	Description string `json:"description"`
+	ParentID    int64  `json:"parent_id"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+type Method struct {
+	Element MethodItem `json:"method"`
+}
+
+// MethodList - Holds a list of Methods
+type MethodList struct {
+	Methods []Method `json:"methods"`
+}
+
+// MetricItem - Defines the metric object serialized/Unserialized in json format
+type MetricItem struct {
+	ID          int64  `json:"id"`
+	Name        string `json:"friendly_name"`
+	SystemName  string `json:"system_name"`
+	Description string `json:"description"`
+	Unit        string `json:"unit"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+// MetricJSON - Holds a obj Metric serialized/Unserialized in json format
+type MetricJSON struct {
+	Element MetricItem `json:"metric"`
+}
+
+// MetricJSONList - Holds a list of Metrics serialized/Unserialized in json format
+type MetricJSONList struct {
+	Metrics []MetricJSON `json:"metrics"`
+}
+
+// MappingRuleItem - Defines the mapping rule object serialized/Unserialized in json format
+type MappingRuleItem struct {
+	ID         int64  `json:"id"`
+	MetricID   int64  `json:"metric_id"`
+	Pattern    string `json:"pattern"`
+	HTTPMethod string `json:"http_method"`
+	Delta      int    `json:"delta"`
+	Position   int    `json:"position"`
+	Last       bool   `json:"last"`
+	CreatedAt  string `json:"created_at"`
+	UpdatedAt  string `json:"updated_at"`
+}
+
+// MappingRuleJSON - Holds a MappingRule obj serialized/Unserialized in json format
+type MappingRuleJSON struct {
+	Element MappingRuleItem `json:"mapping_rule"`
+}
+
+// MappingRuleJSONList - Holds a list of MappingRules serialized/Unserialized in json format
+type MappingRuleJSONList struct {
+	MappingRules []MappingRuleJSON `json:"mapping_rules"`
+}
+
+// BackendAPIUsageItem - Defines the backend usage object serialized/Unserialized in json format
+type BackendAPIUsageItem struct {
+	ID           int64  `json:"id"`
+	Path         string `json:"path"`
+	ProductID    int64  `json:"service_id"`
+	BackendAPIID int64  `json:"backend_id"`
+}
+
+// BackendAPIUsage - Defines the backend usage object serialized/Unserialized in json format
+type BackendAPIUsage struct {
+	Element BackendAPIUsageItem `json:"backend_usage"`
+}
+
+// BackendAPIUsageList - Holds a list of MappingRules serialized/Unserialized in json format
+type BackendAPIUsageList []BackendAPIUsage
