@@ -12,6 +12,8 @@ const (
 	productResourceEndpoint           = "/admin/api/services/%d.json"
 	productMethodListResourceEndpoint = "/admin/api/services/%d/metrics/%d/methods.json"
 	productMethodResourceEndpoint     = "/admin/api/services/%d/metrics/%d/methods/%d.json"
+	productMetricListResourceEndpoint = "/admin/api/services/%d/metrics.json"
+	productMetricResourceEndpoint     = "/admin/api/services/%d/metrics/%d.json"
 )
 
 // CreateProduct Create 3scale Product
@@ -206,6 +208,114 @@ func (c *ThreeScaleClient) UpdateProductMethod(productID, hitsID, methodID int64
 	defer resp.Body.Close()
 
 	item := &Method{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ListProductMetrics List existing product metrics
+func (c *ThreeScaleClient) ListProductMetrics(productID int64) (*MetricJSONList, error) {
+	endpoint := fmt.Sprintf(productMetricListResourceEndpoint, productID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := &MetricJSONList{}
+	err = handleJsonResp(resp, http.StatusOK, list)
+	return list, err
+}
+
+// CreateProductMetric Create 3scale product metric
+func (c *ThreeScaleClient) CreateProductMetric(productID int64, params Params) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(productMetricListResourceEndpoint, productID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteProductMetric Delete 3scale product metric
+func (c *ThreeScaleClient) DeleteProductMetric(productID, metricID int64) error {
+	endpoint := fmt.Sprintf(productMetricResourceEndpoint, productID, metricID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// ProductMetric Read 3scale product metric
+func (c *ThreeScaleClient) ProductMetric(productID, metricID int64) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(productMetricResourceEndpoint, productID, metricID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateProductMetric Update 3scale product metric
+func (c *ThreeScaleClient) UpdateProductMetric(productID, metricID int64, params Params) (*MetricJSON, error) {
+	endpoint := fmt.Sprintf(productMetricResourceEndpoint, productID, metricID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MetricJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }
