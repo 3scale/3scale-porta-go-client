@@ -8,12 +8,14 @@ import (
 )
 
 const (
-	productListResourceEndpoint       = "/admin/api/services.json"
-	productResourceEndpoint           = "/admin/api/services/%d.json"
-	productMethodListResourceEndpoint = "/admin/api/services/%d/metrics/%d/methods.json"
-	productMethodResourceEndpoint     = "/admin/api/services/%d/metrics/%d/methods/%d.json"
-	productMetricListResourceEndpoint = "/admin/api/services/%d/metrics.json"
-	productMetricResourceEndpoint     = "/admin/api/services/%d/metrics/%d.json"
+	productListResourceEndpoint            = "/admin/api/services.json"
+	productResourceEndpoint                = "/admin/api/services/%d.json"
+	productMethodListResourceEndpoint      = "/admin/api/services/%d/metrics/%d/methods.json"
+	productMethodResourceEndpoint          = "/admin/api/services/%d/metrics/%d/methods/%d.json"
+	productMetricListResourceEndpoint      = "/admin/api/services/%d/metrics.json"
+	productMetricResourceEndpoint          = "/admin/api/services/%d/metrics/%d.json"
+	productMappingRuleListResourceEndpoint = "/admin/api/services/%d/proxy/mapping_rules.json"
+	productMappingRuleResourceEndpoint     = "/admin/api/services/%d/proxy/mapping_rules/%d.json"
 )
 
 // CreateProduct Create 3scale Product
@@ -316,6 +318,114 @@ func (c *ThreeScaleClient) UpdateProductMetric(productID, metricID int64, params
 	defer resp.Body.Close()
 
 	item := &MetricJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ListProductMappingRules List existing product mappingrules
+func (c *ThreeScaleClient) ListProductMappingRules(productID int64) (*MappingRuleJSONList, error) {
+	endpoint := fmt.Sprintf(productMappingRuleListResourceEndpoint, productID)
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	list := &MappingRuleJSONList{}
+	err = handleJsonResp(resp, http.StatusOK, list)
+	return list, err
+}
+
+// CreateProductMappingRule Create 3scale product mappingrule
+func (c *ThreeScaleClient) CreateProductMappingRule(productID int64, params Params) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(productMappingRuleListResourceEndpoint, productID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildPostReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
+	return item, err
+}
+
+// DeleteProductMappingRule Delete 3scale product mappingrule
+func (c *ThreeScaleClient) DeleteProductMappingRule(productID, itemID int64) error {
+	endpoint := fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+// ProductMappingRule Read 3scale product mappingrule
+func (c *ThreeScaleClient) ProductMappingRule(productID, itemID int64) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateProductMappingRule Update 3scale product mappingrule
+func (c *ThreeScaleClient) UpdateProductMappingRule(productID, itemID int64, params Params) (*MappingRuleJSON, error) {
+	endpoint := fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &MappingRuleJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }

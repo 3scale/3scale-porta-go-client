@@ -537,3 +537,266 @@ func TestUpdateProductMetric(t *testing.T) {
 		t.Fatalf("description does not match. Expected [%s]; got [%s]", params["description"], obj.Element.Description)
 	}
 }
+
+func TestListProductMappingRules(t *testing.T) {
+	var (
+		productID int64 = 97
+		endpoint        = fmt.Sprintf(productMappingRuleListResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		list := MappingRuleJSONList{
+			MappingRules: []MappingRuleJSON{
+				{
+					Element: MappingRuleItem{
+						ID:         1,
+						MetricID:   2,
+						Pattern:    "/v1",
+						HTTPMethod: "GET",
+					},
+				},
+				{
+					Element: MappingRuleItem{
+						ID:         2,
+						MetricID:   2,
+						Pattern:    "/v2",
+						HTTPMethod: "GET",
+					},
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	list, err := c.ListProductMappingRules(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if list == nil {
+		t.Fatal("list returned nil")
+	}
+
+	if len(list.MappingRules) != 2 {
+		t.Fatalf("Then number of list items does not match. Expected [%d]; got [%d]", 2, len(list.MappingRules))
+	}
+}
+
+func TestCreateProductMappingRule(t *testing.T) {
+	var (
+		productID int64 = 97
+		params          = Params{"pattern": "/somePath"}
+		endpoint        = fmt.Sprintf(productMappingRuleListResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         10,
+				MetricID:   2,
+				Pattern:    params["pattern"],
+				HTTPMethod: "GET",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateProductMappingRule(productID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.ID != 10 {
+		t.Fatalf("ID does not match. Expected [%d]; got [%d]", 10, obj.Element.ID)
+	}
+
+	if obj.Element.Pattern != params["pattern"] {
+		t.Fatalf("name does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+	}
+}
+
+func TestDeleteProductMappingRule(t *testing.T) {
+	var (
+		productID int64 = 97
+		itemID    int64 = 123325
+		endpoint        = fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteProductMappingRule(productID, itemID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestReadProductMappingRule(t *testing.T) {
+	var (
+		productID int64 = 97
+		itemID    int64 = 123325
+		endpoint        = fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         itemID,
+				MetricID:   2,
+				Pattern:    "/v1",
+				HTTPMethod: "GET",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.ProductMappingRule(productID, itemID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.ID != itemID {
+		t.Fatalf("ID does not match. Expected [%d]; got [%d]", itemID, obj.Element.ID)
+	}
+}
+
+func TestUpdateProductMappingRule(t *testing.T) {
+	var (
+		productID int64 = 98765
+		itemID    int64 = 123325
+		endpoint        = fmt.Sprintf(productMappingRuleResourceEndpoint, productID, itemID)
+		params          = Params{"pattern": "/newPath"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		item := &MappingRuleJSON{
+			Element: MappingRuleItem{
+				ID:         itemID,
+				MetricID:   2,
+				Pattern:    params["pattern"],
+				HTTPMethod: "GET",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateProductMappingRule(productID, itemID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.ID != itemID {
+		t.Fatalf("ID does not match. Expected [%d]; got [%d]", itemID, obj.Element.ID)
+	}
+
+	if obj.Element.Pattern != params["pattern"] {
+		t.Fatalf("description does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
+	}
+}
