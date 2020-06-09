@@ -16,6 +16,7 @@ const (
 	productMetricResourceEndpoint          = "/admin/api/services/%d/metrics/%d.json"
 	productMappingRuleListResourceEndpoint = "/admin/api/services/%d/proxy/mapping_rules.json"
 	productMappingRuleResourceEndpoint     = "/admin/api/services/%d/proxy/mapping_rules/%d.json"
+	productProxyResourceEndpoint           = "/admin/api/services/%d/proxy.json"
 )
 
 // CreateProduct Create 3scale Product
@@ -426,6 +427,51 @@ func (c *ThreeScaleClient) UpdateProductMappingRule(productID, itemID int64, par
 	defer resp.Body.Close()
 
 	item := &MappingRuleJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ProductProxy Read 3scale product proxy
+func (c *ThreeScaleClient) ProductProxy(productID int64) (*ProxyJSON, error) {
+	endpoint := fmt.Sprintf(productProxyResourceEndpoint, productID)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &ProxyJSON{}
+	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// UpdateProductProxy Update 3scale product mappingrule
+func (c *ThreeScaleClient) UpdateProductProxy(productID int64, params Params) (*ProxyJSON, error) {
+	endpoint := fmt.Sprintf(productProxyResourceEndpoint, productID)
+
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &ProxyJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
 	return item, err
 }

@@ -129,6 +129,7 @@ type Plan struct {
 	Error              string   `xml:"error,omitempty"`
 }
 
+// Deprecated. Use ProxyItem instead
 type Proxy struct {
 	XMLName                 xml.Name `xml:"proxy"`
 	ServiceID               string   `xml:"service_id"`
@@ -504,3 +505,37 @@ type BackendAPIUsage struct {
 
 // BackendAPIUsageList - Holds a list of MappingRules serialized/Unserialized in json format
 type BackendAPIUsageList []BackendAPIUsage
+
+type ProxyItem struct {
+	ServiceID                  int64  `json:"service_id"`
+	Endpoint                   string `json:"endpoint"`
+	ApiBackend                 string `json:"api_backend"`
+	CredentialsLocation        string `json:"credentials_location"`
+	AuthAppKey                 string `json:"auth_app_key"`
+	AuthAppID                  string `json:"auth_app_id"`
+	AuthUserKey                string `json:"auth_user_key"`
+	ErrorAuthFailed            string `json:"error_auth_failed"`
+	ErrorAuthMissing           string `json:"error_auth_missing"`
+	ErrorStatusAuthFailed      int    `json:"error_status_auth_failed"`
+	ErrorHeadersAuthFailed     string `json:"error_headers_auth_failed"`
+	ErrorStatusAuthMissing     int    `json:"error_status_auth_missing"`
+	ErrorHeadersAuthMissing    string `json:"error_headers_auth_missing"`
+	ErrorNoMatch               string `json:"error_no_match"`
+	ErrorStatusNoMatch         int    `json:"error_status_no_match"`
+	ErrorHeadersNoMatch        string `json:"error_headers_no_match"`
+	ErrorLimitsExceeded        string `json:"error_limits_exceeded"`
+	ErrorStatusLimitsExceeded  int    `json:"error_status_limits_exceeded"`
+	ErrorHeadersLimitsExceeded string `json:"error_headers_limits_exceeded"`
+	SecretToken                string `json:"secret_token"`
+	HostnameRewrite            string `json:"hostname_rewrite"`
+	SandboxEndpoint            string `json:"sandbox_endpoint"`
+	ApiTestPath                string `json:"api_test_path"`
+	CreatedAt                  string `json:"created_at"`
+	UpdatedAt                  string `json:"updated_at"`
+	LockVersion                int    `json:"lock_version"`
+	OidcIssuerEndpoint         string `json:"oidc_issuer_endpoint"`
+}
+
+type ProxyJSON struct {
+	Element ProxyItem `json:"proxy"`
+}
