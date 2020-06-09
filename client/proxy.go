@@ -16,6 +16,7 @@ const (
 )
 
 // ReadProxy - Returns the Proxy for a specific Service.
+// Deprecated - Use ProductProxy function instead
 func (c *ThreeScaleClient) ReadProxy(svcID string) (Proxy, error) {
 	var p Proxy
 

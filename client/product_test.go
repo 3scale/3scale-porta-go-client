@@ -800,3 +800,107 @@ func TestUpdateProductMappingRule(t *testing.T) {
 		t.Fatalf("description does not match. Expected [%s]; got [%s]", params["pattern"], obj.Element.Pattern)
 	}
 }
+
+func TestReadProductProxy(t *testing.T) {
+	var (
+		productID          int64 = 97
+		productionEndpoint       = "prod.example.com"
+		endpoint                 = fmt.Sprintf(productProxyResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		item := &ProxyJSON{
+			Element: ProxyItem{
+				Endpoint:        productionEndpoint,
+				SandboxEndpoint: "staging.example.com",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.ProductProxy(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.Endpoint != productionEndpoint {
+		t.Fatalf("Endpoint does not match. Expected [%s]; got [%s]", productionEndpoint, obj.Element.Endpoint)
+	}
+}
+
+func TestUpdateProductProxy(t *testing.T) {
+	var (
+		productID          int64 = 97
+		productionEndpoint       = "prod.example.com"
+		endpoint                 = fmt.Sprintf(productProxyResourceEndpoint, productID)
+		params                   = Params{"endpoint": productionEndpoint}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		item := &ProxyJSON{
+			Element: ProxyItem{
+				Endpoint:        productionEndpoint,
+				SandboxEndpoint: "staging.example.com",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateProductProxy(productID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.Endpoint != productionEndpoint {
+		t.Fatalf("Endpoint does not match. Expected [%s]; got [%s]", productionEndpoint, obj.Element.Endpoint)
+	}
+
+}
