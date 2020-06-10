@@ -53,6 +53,7 @@ type ApplicationList struct {
 }
 
 // ApplicationPlansList - Holds a list of application plans
+// Deprecated. Use ApplicationPlanJSONList instead
 type ApplicationPlansList struct {
 	XMLName xml.Name `xml:"plans"`
 	Plans   []Plan   `xml:"plan"`
@@ -111,6 +112,7 @@ type MetricList struct {
 }
 
 // Plan - API response for create application plan endpoint
+// Deprecated. Use ApplicationPlanItem instead
 type Plan struct {
 	XMLNameName        xml.Name `xml:"plan"`
 	Custom             string   `xml:"custom,attr"`
@@ -538,4 +540,31 @@ type ProxyItem struct {
 
 type ProxyJSON struct {
 	Element ProxyItem `json:"proxy"`
+}
+
+// ApplicationPlanItem - Defines the mapping rule object serialized/Unserialized in json format
+type ApplicationPlanItem struct {
+	ID                 int64   `json:"id"`
+	Name               string  `json:"name"`
+	SystemName         string  `json:"system_name"`
+	State              string  `json:"state"`
+	SetupFee           float64 `json:"setup_fee"`
+	CostPerMonth       float64 `json:"cost_per_month"`
+	TrialPeriodDays    int     `json:"trial_period_days"`
+	CancellationPeriod int     `json:"cancellation_period"`
+	ApprovalRequired   bool    `json:"approval_required"`
+	Default            bool    `json:"default"`
+	Custom             bool    `json:"custom"`
+	CreatedAt          string  `json:"created_at"`
+	UpdatedAt          string  `json:"updated_at"`
+}
+
+// ApplicationPlan - Holds an Application Plan obj serialized/Unserialized in json format
+type ApplicationPlan struct {
+	Element ApplicationPlanItem `json:"application_plan"`
+}
+
+// ApplicationPlanJSONList - Holds a list of Application plans serialized/Unserialized in json format
+type ApplicationPlanJSONList struct {
+	Plans []ApplicationPlan `json:"plans"`
 }

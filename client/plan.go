@@ -16,6 +16,7 @@ const (
 )
 
 // CreateAppPlan - Creates an application plan.
+// Deprecated. Use CreateApplicationPlan instead
 func (c *ThreeScaleClient) CreateAppPlan(svcId string, name string, stateEvent string) (Plan, error) {
 	var apiResp Plan
 	endpoint := fmt.Sprintf(appPlanCreate, svcId)
@@ -42,6 +43,7 @@ func (c *ThreeScaleClient) CreateAppPlan(svcId string, name string, stateEvent s
 }
 
 // UpdateAppPlan - Updates an application plan
+// Deprecated. Use UpdateApplicationPlan instead
 func (c *ThreeScaleClient) UpdateAppPlan(svcId string, appPlanId string, name string, stateEvent string, params Params) (Plan, error) {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
@@ -61,6 +63,7 @@ func (c *ThreeScaleClient) UpdateAppPlan(svcId string, appPlanId string, name st
 }
 
 // DeleteAppPlan - Deletes an application plan
+// Deprecated. Use DeleteApplicationPlan instead
 func (c *ThreeScaleClient) DeleteAppPlan(svcId string, appPlanId string) error {
 	endpoint := fmt.Sprintf(appPlanUpdateDelete, svcId, appPlanId)
 
@@ -82,6 +85,7 @@ func (c *ThreeScaleClient) DeleteAppPlan(svcId string, appPlanId string) error {
 }
 
 // ListAppPlanByServiceId - Lists all application plans, filtering on service id
+// Deprecated. Use ListApplicationPlansByProduct instead
 func (c *ThreeScaleClient) ListAppPlanByServiceId(svcId string) (ApplicationPlansList, error) {
 	var appPlans ApplicationPlansList
 	endpoint := fmt.Sprintf(appPlansByServiceList, svcId)
