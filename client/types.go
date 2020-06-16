@@ -589,3 +589,24 @@ type ApplicationPlanLimit struct {
 type ApplicationPlanLimitList struct {
 	Limits []ApplicationPlanLimit `json:"limits"`
 }
+
+// ApplicationPlanPricingRuleItem - Holds an Application Plan pricing rule item obj serialized/Unserialized in json format
+type ApplicationPlanPricingRuleItem struct {
+	ID          int64  `json:"id"`
+	MetricID    int64  `json:"metric_id"`
+	CostPerUnit string `json:"cost_per_unit"`
+	Min         int    `json:"min"`
+	Max         int    `json:"max"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+// ApplicationPlanPricingRule - Holds an Application Plan pricing rule obj serialized/Unserialized in json format
+type ApplicationPlanPricingRule struct {
+	Element ApplicationPlanPricingRuleItem `json:"pricing_rule"`
+}
+
+// ApplicationPlanPricingRuleList - Holds a list of Application Plan pricing rules serialized/Unserialized in json format
+type ApplicationPlanPricingRuleList struct {
+	Rules []ApplicationPlanPricingRule `json:"pricing_rules"`
+}

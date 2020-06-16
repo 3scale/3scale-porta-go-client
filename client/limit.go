@@ -186,7 +186,7 @@ func (c *ThreeScaleClient) listLimits(ep string) (LimitList, error) {
 	return ml, err
 }
 
-// ListApplicationPlansLimits List existing application plans for a given product
+// ListApplicationPlansLimits List existing application plan limits for a given application plan
 func (c *ThreeScaleClient) ListApplicationPlansLimits(planID int64) (*ApplicationPlanLimitList, error) {
 	endpoint := fmt.Sprintf(appPlanLimitListResourceEndpoint, planID)
 
