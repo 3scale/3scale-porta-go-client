@@ -542,7 +542,7 @@ type ProxyJSON struct {
 	Element ProxyItem `json:"proxy"`
 }
 
-// ApplicationPlanItem - Defines the mapping rule object serialized/Unserialized in json format
+// ApplicationPlanItem - Defines the application plan object serialized/Unserialized in json format
 type ApplicationPlanItem struct {
 	ID                 int64   `json:"id"`
 	Name               string  `json:"name"`
@@ -567,4 +567,25 @@ type ApplicationPlan struct {
 // ApplicationPlanJSONList - Holds a list of Application plans serialized/Unserialized in json format
 type ApplicationPlanJSONList struct {
 	Plans []ApplicationPlan `json:"plans"`
+}
+
+// ApplicationPlanLimitItem - Holds an Application Plan limit item obj serialized/Unserialized in json format
+type ApplicationPlanLimitItem struct {
+	ID        int64  `json:"id"`
+	Period    string `json:"period"`
+	Value     int    `json:"value"`
+	MetricID  int64  `json:"metric_id"`
+	PlanID    int64  `json:"plan_id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+// ApplicationPlanLimit - Holds an Application Plan limit obj serialized/Unserialized in json format
+type ApplicationPlanLimit struct {
+	Element ApplicationPlanLimitItem `json:"limit"`
+}
+
+// ApplicationPlanLimitList - Holds a list of Application Plan limits serialized/Unserialized in json format
+type ApplicationPlanLimitList struct {
+	Limits []ApplicationPlanLimit `json:"limits"`
 }
