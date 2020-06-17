@@ -53,6 +53,7 @@ type ApplicationList struct {
 }
 
 // ApplicationPlansList - Holds a list of application plans
+// Deprecated. Use ApplicationPlanJSONList instead
 type ApplicationPlansList struct {
 	XMLName xml.Name `xml:"plans"`
 	Plans   []Plan   `xml:"plan"`
@@ -111,6 +112,7 @@ type MetricList struct {
 }
 
 // Plan - API response for create application plan endpoint
+// Deprecated. Use ApplicationPlanItem instead
 type Plan struct {
 	XMLNameName        xml.Name `xml:"plan"`
 	Custom             string   `xml:"custom,attr"`
@@ -538,4 +540,73 @@ type ProxyItem struct {
 
 type ProxyJSON struct {
 	Element ProxyItem `json:"proxy"`
+}
+
+// ApplicationPlanItem - Defines the application plan object serialized/Unserialized in json format
+type ApplicationPlanItem struct {
+	ID                 int64   `json:"id"`
+	Name               string  `json:"name"`
+	SystemName         string  `json:"system_name"`
+	State              string  `json:"state"`
+	SetupFee           float64 `json:"setup_fee"`
+	CostPerMonth       float64 `json:"cost_per_month"`
+	TrialPeriodDays    int     `json:"trial_period_days"`
+	CancellationPeriod int     `json:"cancellation_period"`
+	ApprovalRequired   bool    `json:"approval_required"`
+	Default            bool    `json:"default"`
+	Custom             bool    `json:"custom"`
+	CreatedAt          string  `json:"created_at"`
+	UpdatedAt          string  `json:"updated_at"`
+}
+
+// ApplicationPlan - Holds an Application Plan obj serialized/Unserialized in json format
+type ApplicationPlan struct {
+	Element ApplicationPlanItem `json:"application_plan"`
+}
+
+// ApplicationPlanJSONList - Holds a list of Application plans serialized/Unserialized in json format
+type ApplicationPlanJSONList struct {
+	Plans []ApplicationPlan `json:"plans"`
+}
+
+// ApplicationPlanLimitItem - Holds an Application Plan limit item obj serialized/Unserialized in json format
+type ApplicationPlanLimitItem struct {
+	ID        int64  `json:"id"`
+	Period    string `json:"period"`
+	Value     int    `json:"value"`
+	MetricID  int64  `json:"metric_id"`
+	PlanID    int64  `json:"plan_id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
+// ApplicationPlanLimit - Holds an Application Plan limit obj serialized/Unserialized in json format
+type ApplicationPlanLimit struct {
+	Element ApplicationPlanLimitItem `json:"limit"`
+}
+
+// ApplicationPlanLimitList - Holds a list of Application Plan limits serialized/Unserialized in json format
+type ApplicationPlanLimitList struct {
+	Limits []ApplicationPlanLimit `json:"limits"`
+}
+
+// ApplicationPlanPricingRuleItem - Holds an Application Plan pricing rule item obj serialized/Unserialized in json format
+type ApplicationPlanPricingRuleItem struct {
+	ID          int64  `json:"id"`
+	MetricID    int64  `json:"metric_id"`
+	CostPerUnit string `json:"cost_per_unit"`
+	Min         int    `json:"min"`
+	Max         int    `json:"max"`
+	CreatedAt   string `json:"created_at"`
+	UpdatedAt   string `json:"updated_at"`
+}
+
+// ApplicationPlanPricingRule - Holds an Application Plan pricing rule obj serialized/Unserialized in json format
+type ApplicationPlanPricingRule struct {
+	Element ApplicationPlanPricingRuleItem `json:"pricing_rule"`
+}
+
+// ApplicationPlanPricingRuleList - Holds a list of Application Plan pricing rules serialized/Unserialized in json format
+type ApplicationPlanPricingRuleList struct {
+	Rules []ApplicationPlanPricingRule `json:"pricing_rules"`
 }
