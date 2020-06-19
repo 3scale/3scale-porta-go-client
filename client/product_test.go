@@ -904,3 +904,54 @@ func TestUpdateProductProxy(t *testing.T) {
 	}
 
 }
+
+func TestDeployProductProxy(t *testing.T) {
+	var (
+		productID          int64 = 97
+		productionEndpoint       = "prod.example.com"
+		endpoint                 = fmt.Sprintf(productProxyDeployResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		item := &ProxyJSON{
+			Element: ProxyItem{
+				Endpoint:        productionEndpoint,
+				SandboxEndpoint: "staging.example.com",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(item)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.DeployProductProxy(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("returned nil")
+	}
+
+	if obj.Element.Endpoint != productionEndpoint {
+		t.Fatalf("Endpoint does not match. Expected [%s]; got [%s]", productionEndpoint, obj.Element.Endpoint)
+	}
+}

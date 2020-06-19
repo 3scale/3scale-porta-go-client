@@ -17,6 +17,7 @@ const (
 	productMappingRuleListResourceEndpoint = "/admin/api/services/%d/proxy/mapping_rules.json"
 	productMappingRuleResourceEndpoint     = "/admin/api/services/%d/proxy/mapping_rules/%d.json"
 	productProxyResourceEndpoint           = "/admin/api/services/%d/proxy.json"
+	productProxyDeployResourceEndpoint     = "/admin/api/services/%d/proxy/deploy.json"
 )
 
 // CreateProduct Create 3scale Product
@@ -473,5 +474,25 @@ func (c *ThreeScaleClient) UpdateProductProxy(productID int64, params Params) (*
 
 	item := &ProxyJSON{}
 	err = handleJsonResp(resp, http.StatusOK, item)
+	return item, err
+}
+
+// ProductProxyDeploy Promotes proxy configuration to staging
+func (c *ThreeScaleClient) DeployProductProxy(productID int64) (*ProxyJSON, error) {
+	endpoint := fmt.Sprintf(productProxyDeployResourceEndpoint, productID)
+
+	req, err := c.buildPostReq(endpoint, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	item := &ProxyJSON{}
+	err = handleJsonResp(resp, http.StatusCreated, item)
 	return item, err
 }
