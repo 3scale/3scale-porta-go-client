@@ -20,7 +20,11 @@ type ThreeScaleClient struct {
 	adminPortal *AdminPortal
 	credential  string
 	httpClient  *http.Client
+	afterResponse AfterResponseCB
 }
+
+// AfterResponseCB provides a hook that can be used to infer details of the underlying HTTP request/response
+type AfterResponseCB func(statusCode int, timeTaken time.Duration)
 
 // Application - API response for create app endpoint
 type Application struct {
