@@ -40,7 +40,11 @@ func NewThreeScale(backEnd *AdminPortal, credential string, httpClient *http.Cli
 	if httpClient == nil {
 		httpClient = http.DefaultClient
 	}
-	return &ThreeScaleClient{backEnd, credential, httpClient}
+	return &ThreeScaleClient{
+		adminPortal: backEnd,
+		credential:  credential,
+		httpClient:  httpClient,
+	}
 }
 
 func NewParams() Params {
@@ -55,6 +59,12 @@ func (p Params) AddParam(key string, value string) {
 // SetCredentials allow the user to set the client credentials
 func (c *ThreeScaleClient) SetCredentials(credential string) {
 	c.credential = credential
+}
+
+// SetHook sets the callback which gets invoked upon response from 3scale
+// Note, this is not supported by all endpoints, refer to endpoints documentation
+func (c *ThreeScaleClient) SetHook(cb AfterResponseCB) {
+	c.afterResponse = cb
 }
 
 // Request builder for GET request to the provided endpoint
