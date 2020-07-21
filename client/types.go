@@ -9,10 +9,8 @@ import (
 
 // AdminPortal defines a 3scale adminPortal service
 type AdminPortal struct {
-	scheme  string
-	host    string
-	port    int
-	baseUrl *url.URL
+	rawURL string
+	url    *url.URL
 }
 
 // ThreeScaleClient interacts with 3scale Service Management API

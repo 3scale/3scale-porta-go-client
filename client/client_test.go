@@ -2,8 +2,12 @@ package client
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
+	"path/filepath"
+	"reflect"
+	"runtime"
 	"strings"
 	"testing"
 
@@ -11,9 +15,21 @@ import (
 )
 
 func TestNewAdminPortal(t *testing.T) {
-	_, err := NewAdminPortal("https", "www.test.com", 443)
+	ap, err := NewAdminPortal("https", "www.test.com", 443)
 	if err != nil {
-		t.Fatalf("unexpected error when creating client")
+		t.Errorf("unexpected error when creating client")
+	}
+	equals(t, "https://www.test.com:443", ap.rawURL)
+
+	ap, err = NewAdminPortal("https", "www.test.com", 0)
+	if err != nil {
+		t.Errorf("unexpected error when creating client")
+	}
+	equals(t, "https://www.test.com", ap.rawURL)
+
+	_, err = NewAdminPortalFromStr("https://www.test.com:443")
+	if err != nil {
+		t.Errorf("expected nil error when creating with valid url")
 	}
 }
 
@@ -112,10 +128,72 @@ func NewTestClient(fn RoundTripFunc) *http.Client {
 
 func NewTestAdminPortal(t *testing.T) *AdminPortal {
 	t.Helper()
-	ap, err := NewAdminPortal("https", "www.test.com", 443)
+	ap, err := NewAdminPortalFromStr("https://www.test.com:443")
 	if err != nil {
 		t.Fail()
 	}
 	return ap
 
+}
+
+func TestAdminPortalPathIsPreserved(t *testing.T) {
+	const scheme = "https"
+	const host = "www.test.com"
+	const port = "443"
+	ap, err := NewAdminPortalFromStr("https://www.test.com:443/example/")
+	if err != nil {
+		t.Errorf("unexpected err when creating admin portal")
+	}
+	if ap.rawURL != "https://www.test.com:443/example" {
+		t.Errorf("expected trailing slash to be stripped")
+	}
+
+	verify:= func(req *http.Request, path string) {
+		equals(t, host, req.URL.Hostname())
+		equals(t, port, req.URL.Port())
+		equals(t, scheme, req.URL.Scheme)
+		equals(t, path, req.URL.Path)
+	}
+
+
+	// Test path is preserved for GET
+	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req, "/example/admin/api/services.xml")
+		return &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+		}
+	})).ListServices()
+
+	// Test path is preserved for POST
+	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req, "/example/admin/api/services.xml")
+		return &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+		}
+	})).CreateService("any")
+
+	// Test path is preserved for DELETE
+	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req,"/example/admin/api/services/any.xml")
+		return &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+		}
+	})).DeleteService("any")
+
+	// Test path is preserved for PUT
+	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req,"/example/admin/api/services/any.xml")
+		return &http.Response{
+			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+		}
+	})).UpdateService("any", NewParams())
+
+}
+
+func equals(t *testing.T, exp, act interface{}) {
+	if !reflect.DeepEqual(exp, act) {
+		_, file, line, _ := runtime.Caller(1)
+		fmt.Printf("\033[31m%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\033[39m\n\n", filepath.Base(file), line, exp, act)
+		t.FailNow()
+	}
 }
