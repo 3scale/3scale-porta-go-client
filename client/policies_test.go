@@ -31,7 +31,7 @@ func TestPolicies(t *testing.T) {
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: map[string]interface{}{},
 				},
 			},
 		}
@@ -74,7 +74,7 @@ func TestUpdatePolicies(t *testing.T) {
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: map[string]interface{}{},
 				},
 			},
 		}
@@ -95,7 +95,7 @@ func TestUpdatePolicies(t *testing.T) {
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: map[string]interface{}{},
 				},
 			},
 		}
@@ -123,6 +123,52 @@ func TestUpdatePolicies(t *testing.T) {
 	}
 
 	if !reflect.DeepEqual(obj, policies) {
+		sObj, _ := json.Marshal(obj)
+		sPol, _ := json.Marshal(policies)
+		t.Logf("Expected %s; got %s", string(sPol), string(sObj))
 		t.Fatalf("Expected %v; got %v", policies, obj)
+	}
+}
+
+func TestPoliciesType(t *testing.T) {
+	policiesA := []byte(`{"policies_config": [
+						{
+						"name": "apicast",
+						"version": "builtin",
+						"configuration": { "prop1": "value1", "prop2": "value2"},
+						"enabled": true
+						}
+	]}`)
+
+	// Same as policiesA but with slightly different configuration serialization
+	policiesB := []byte(`{"policies_config": [
+						{
+						"name": "apicast",
+						"version": "builtin",
+						"configuration": {
+						"prop1":                         "value1",
+						"prop2": "value2"
+						},
+						"enabled": true
+						}
+	]}`)
+
+	policiesAObj := &PoliciesConfigList{}
+	err := json.Unmarshal(policiesA, policiesAObj)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	policiesBObj := &PoliciesConfigList{}
+	err = json.Unmarshal(policiesB, policiesBObj)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(policiesAObj, policiesBObj) {
+		t.Logf("%v | %v", policiesAObj, policiesBObj)
+		pa, _ := json.Marshal(policiesAObj)
+		pb, _ := json.Marshal(policiesBObj)
+		t.Fatalf("objects not equal: %s | %s", string(pa), string(pb))
 	}
 }

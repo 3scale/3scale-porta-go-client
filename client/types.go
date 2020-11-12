@@ -622,7 +622,7 @@ type PolicyConfig struct {
 	Version string `json:"version"`
 
 	// Configuration defines the policy configuration
-	Configuration map[string]string `json:"configuration"`
+	Configuration map[string]interface{} `json:"configuration"`
 
 	// Version defines the policy version
 	Enabled bool `json:"enabled"`
