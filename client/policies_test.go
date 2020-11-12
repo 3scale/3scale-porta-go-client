@@ -25,13 +25,14 @@ func TestPolicies(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
 		}
 
+		policyConfiguration := json.RawMessage(`{}`)
 		policies := &PoliciesConfigList{
 			Policies: []PolicyConfig{
 				{
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: &policyConfiguration,
 				},
 			},
 		}
@@ -66,15 +67,16 @@ func TestPolicies(t *testing.T) {
 
 func TestUpdatePolicies(t *testing.T) {
 	var (
-		productID int64 = 98765
-		endpoint        = fmt.Sprintf(policiesResourceEndpoint, productID)
-		policies        = &PoliciesConfigList{
+		productID           int64 = 98765
+		endpoint                  = fmt.Sprintf(policiesResourceEndpoint, productID)
+		policyConfiguration       = json.RawMessage(`{}`)
+		policies                  = &PoliciesConfigList{
 			Policies: []PolicyConfig{
 				{
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: &policyConfiguration,
 				},
 			},
 		}
@@ -89,13 +91,14 @@ func TestUpdatePolicies(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
 		}
 
+		policyConfiguration := json.RawMessage(`{}`)
 		respPolicies := &PoliciesConfigList{
 			Policies: []PolicyConfig{
 				{
 					Name:          "apicast",
 					Version:       "builtin",
 					Enabled:       true,
-					Configuration: map[string]string{},
+					Configuration: &policyConfiguration,
 				},
 			},
 		}
