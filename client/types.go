@@ -15,9 +15,9 @@ type AdminPortal struct {
 
 // ThreeScaleClient interacts with 3scale Service Management API
 type ThreeScaleClient struct {
-	adminPortal *AdminPortal
-	credential  string
-	httpClient  *http.Client
+	adminPortal   *AdminPortal
+	credential    string
+	httpClient    *http.Client
 	afterResponse AfterResponseCB
 }
 
@@ -611,4 +611,24 @@ type ApplicationPlanPricingRule struct {
 // ApplicationPlanPricingRuleList - Holds a list of Application Plan pricing rules serialized/Unserialized in json format
 type ApplicationPlanPricingRuleList struct {
 	Rules []ApplicationPlanPricingRule `json:"pricing_rules"`
+}
+
+// PolicyConfig defines policy definition
+type PolicyConfig struct {
+	// Name defines the policy unique name
+	Name string `json:"name"`
+
+	// Version defines the policy version
+	Version string `json:"version"`
+
+	// Configuration defines the policy configuration
+	Configuration map[string]interface{} `json:"configuration"`
+
+	// Version defines the policy version
+	Enabled bool `json:"enabled"`
+}
+
+// PoliciesConfigList - Holds a list of policy configs serialized/Unserialized in json format
+type PoliciesConfigList struct {
+	Policies []PolicyConfig `json:"policies_config"`
 }

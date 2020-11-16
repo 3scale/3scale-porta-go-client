@@ -52,7 +52,7 @@ func NewAdminPortalFromStr(portaURL string) (*AdminPortal, error) {
 	portaURL = strings.TrimSuffix(portaURL, "/")
 	return &AdminPortal{
 		rawURL: portaURL,
-		url: parsed,
+		url:    parsed,
 	}, nil
 }
 
@@ -111,6 +111,15 @@ func (c *ThreeScaleClient) buildUpdateReq(ep string, body io.Reader) (*http.Requ
 	req, err := http.NewRequest("PUT", c.adminPortal.rawURL+ep, body)
 	req.Header.Set("Accept", "application/xml")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
+	return req, err
+}
+
+// Request builder for PUT request to the provided endpoint with json content type
+func (c *ThreeScaleClient) buildUpdateJSONReq(ep string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest("PUT", c.adminPortal.rawURL+ep, body)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
 	return req, err
 }
