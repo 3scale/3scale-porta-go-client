@@ -538,6 +538,9 @@ type ProxyItem struct {
 	UpdatedAt                  string `json:"updated_at"`
 	LockVersion                int    `json:"lock_version"`
 	OidcIssuerEndpoint         string `json:"oidc_issuer_endpoint"`
+	OidcIssuerType             string `json:"oidc_issuer_type,omitempty"`
+	JwtClaimWithClientID       string `json:"jwt_claim_with_client_id,omitempty"`
+	JwtClaimWithClientIDType   string `json:"jwt_claim_with_client_id_type,omitempty"`
 }
 
 type ProxyJSON struct {
