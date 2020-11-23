@@ -132,6 +132,15 @@ func (c *ThreeScaleClient) buildUpdateJSONReq(ep string, body io.Reader) (*http.
 	return req, err
 }
 
+// Request builder for PATCH request to the provided endpoint with json content type
+func (c *ThreeScaleClient) buildPatchJSONReq(ep string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest("PATCH", c.adminPortal.rawURL+ep, body)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
+	return req, err
+}
+
 // Request builder for DELETE request to the provided endpoint
 func (c *ThreeScaleClient) buildDeleteReq(ep string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest("DELETE", c.adminPortal.rawURL+ep, body)

@@ -635,3 +635,17 @@ type PolicyConfig struct {
 type PoliciesConfigList struct {
 	Policies []PolicyConfig `json:"policies_config"`
 }
+
+// OIDCConfigurationItem - Holds an OIDC configuration item object
+type OIDCConfigurationItem struct {
+	ID                        int64 `json:"id,omitempty"`
+	StandardFlowEnabled       bool  `json:"standard_flow_enabled"`
+	ImplicitFlowEnabled       bool  `json:"implicit_flow_enabled"`
+	ServiceAccountsEnabled    bool  `json:"service_accounts_enabled"`
+	DirectAccessGrantsEnabled bool  `json:"direct_access_grants_enabled"`
+}
+
+// OIDCConfiguration - Holds an OIDC configuration object
+type OIDCConfiguration struct {
+	Element OIDCConfigurationItem `json:"oidc_configuration"`
+}

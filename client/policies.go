@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"net/url"
 )
 
 const (
@@ -19,9 +18,6 @@ func (c *ThreeScaleClient) Policies(productID int64) (*PoliciesConfigList, error
 	if err != nil {
 		return nil, err
 	}
-
-	urlValues := url.Values{}
-	req.URL.RawQuery = urlValues.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
