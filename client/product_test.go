@@ -955,3 +955,52 @@ func TestDeployProductProxy(t *testing.T) {
 		t.Fatalf("Endpoint does not match. Expected [%s]; got [%s]", productionEndpoint, obj.Element.Endpoint)
 	}
 }
+
+func TestReadProduct(t *testing.T) {
+	var (
+		productID int64 = 98765
+		endpoint        = fmt.Sprintf(productResourceEndpoint, productID)
+		product         = &Product{
+			Element: ProductItem{
+				ID:   productID,
+				Name: "myProduct",
+			},
+		}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		responseBodyBytes, err := json.Marshal(*product)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.Product(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("backendapi returned nil")
+	}
+
+	if *obj != *product {
+		t.Fatalf("Expected %v; got %v", *product, *obj)
+	}
+}
