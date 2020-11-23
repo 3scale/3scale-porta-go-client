@@ -9,7 +9,7 @@ import (
 	"testing"
 )
 
-func TestOidcConfiguration(t *testing.T) {
+func TestOIDCConfiguration(t *testing.T) {
 	var (
 		productID int64 = 97
 		endpoint        = fmt.Sprintf(oidcResourceEndpoint, productID)
@@ -46,7 +46,7 @@ func TestOidcConfiguration(t *testing.T) {
 
 	credential := "someAccessToken"
 	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
-	obj, err := c.OidcConfiguration(productID)
+	obj, err := c.OIDCConfiguration(productID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -60,7 +60,7 @@ func TestOidcConfiguration(t *testing.T) {
 	}
 }
 
-func TestUpdateOidcConfiguration(t *testing.T) {
+func TestUpdateOIDCConfiguration(t *testing.T) {
 	var (
 		productID int64 = 98765
 		endpoint        = fmt.Sprintf(oidcResourceEndpoint, productID)
@@ -97,7 +97,7 @@ func TestUpdateOidcConfiguration(t *testing.T) {
 
 	credential := "someAccessToken"
 	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
-	obj, err := c.UpdateOidcConfiguration(productID, oidcConf)
+	obj, err := c.UpdateOIDCConfiguration(productID, oidcConf)
 	if err != nil {
 		t.Fatal(err)
 	}

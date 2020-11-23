@@ -11,8 +11,8 @@ const (
 	oidcResourceEndpoint = "/admin/api/services/%d/proxy/oidc_configuration.json"
 )
 
-// OidcConfiguration fetches 3scale product oidc configuration
-func (c *ThreeScaleClient) OidcConfiguration(productID int64) (*OIDCConfiguration, error) {
+// OIDCConfiguration fetches 3scale product oidc configuration
+func (c *ThreeScaleClient) OIDCConfiguration(productID int64) (*OIDCConfiguration, error) {
 	endpoint := fmt.Sprintf(oidcResourceEndpoint, productID)
 	req, err := c.buildGetReq(endpoint)
 	if err != nil {
@@ -30,8 +30,8 @@ func (c *ThreeScaleClient) OidcConfiguration(productID int64) (*OIDCConfiguratio
 	return oidcConf, err
 }
 
-// UpdateOidcConfiguration Update 3scale product oidc configuration
-func (c *ThreeScaleClient) UpdateOidcConfiguration(productID int64, oidcConf *OIDCConfiguration) (*OIDCConfiguration, error) {
+// UpdateOIDCConfiguration Update 3scale product oidc configuration
+func (c *ThreeScaleClient) UpdateOIDCConfiguration(productID int64, oidcConf *OIDCConfiguration) (*OIDCConfiguration, error) {
 	endpoint := fmt.Sprintf(oidcResourceEndpoint, productID)
 
 	bodyArr, err := json.Marshal(oidcConf)
