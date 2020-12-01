@@ -1,6 +1,9 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 )
@@ -46,4 +49,80 @@ func (c *ThreeScaleClient) ActiveDoc(id int64) (*ActiveDoc, error) {
 	activeDoc := &ActiveDoc{}
 	err = handleJsonResp(resp, http.StatusOK, activeDoc)
 	return activeDoc, err
+}
+
+// CreateActiveDoc Create 3scale activedoc
+func (c *ThreeScaleClient) CreateActiveDoc(activeDoc *ActiveDoc) (*ActiveDoc, error) {
+	bodyArr, err := json.Marshal(activeDoc.Element)
+	if err != nil {
+		return nil, err
+	}
+	body := bytes.NewReader(bodyArr)
+
+	req, err := c.buildPostJSONReq(activeDocListEndpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respObj := &ActiveDoc{}
+	err = handleJsonResp(resp, http.StatusCreated, respObj)
+	return respObj, err
+}
+
+// UpdateActiveDoc Update existing activedoc
+func (c *ThreeScaleClient) UpdateActiveDoc(activeDoc *ActiveDoc) (*ActiveDoc, error) {
+	if activeDoc == nil {
+		return nil, errors.New("UpdateActiveDoc needs not nil pointer")
+	}
+
+	if activeDoc.Element.ID == nil {
+		return nil, errors.New("UpdateActiveDoc needs not nil ID")
+	}
+
+	endpoint := fmt.Sprintf(activeDocEndpoint, *activeDoc.Element.ID)
+
+	bodyArr, err := json.Marshal(activeDoc.Element)
+	if err != nil {
+		return nil, err
+	}
+	body := bytes.NewReader(bodyArr)
+
+	req, err := c.buildUpdateJSONReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respObj := &ActiveDoc{}
+	err = handleJsonResp(resp, http.StatusOK, respObj)
+	return respObj, err
+}
+
+// DeleteActiveDoc Delete existing activedoc
+func (c *ThreeScaleClient) DeleteActiveDoc(id int64) error {
+	endpoint := fmt.Sprintf(activeDocEndpoint, id)
+
+	req, err := c.buildDeleteReq(endpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
 }

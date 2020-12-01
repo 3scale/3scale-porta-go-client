@@ -114,6 +114,15 @@ func (c *ThreeScaleClient) buildPostReq(ep string, body io.Reader) (*http.Reques
 	return req, err
 }
 
+// Request builder for POST request to the provided endpoint
+func (c *ThreeScaleClient) buildPostJSONReq(ep string, body io.Reader) (*http.Request, error) {
+	req, err := http.NewRequest("POST", c.adminPortal.rawURL+ep, body)
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Basic "+basicAuth("", c.credential))
+	return req, err
+}
+
 // Request builder for PUT request to the provided endpoint
 func (c *ThreeScaleClient) buildUpdateReq(ep string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest("PUT", c.adminPortal.rawURL+ep, body)

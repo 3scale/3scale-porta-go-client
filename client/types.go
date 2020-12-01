@@ -1,7 +1,6 @@
 package client
 
 import (
-	"encoding/json"
 	"encoding/xml"
 	"net/http"
 	"net/url"
@@ -652,16 +651,16 @@ type OIDCConfiguration struct {
 }
 
 type ActiveDocItem struct {
-	ID                     *int64           `json:"id,omitempty"`
-	SystemName             *string          `json:"system_name,omitempty"`
-	Name                   *string          `json:"name,omitempty"`
-	Description            *string          `json:"description,omitempty"`
-	Published              *bool            `json:"published,omitempty"`
-	SkipSwaggerValidations *bool            `json:"skip_swagger_validations,omitempty"`
-	Body                   *json.RawMessage `json:"body,omitempty"`
-	ServiceID              *int64           `json:"service_id,omitempty"`
-	CreatedAt              *string          `json:"created_at,omitempty"`
-	UpdatedAt              *string          `json:"updated_at,omitempty"`
+	ID                     *int64  `json:"id,omitempty"`
+	SystemName             *string `json:"system_name,omitempty"`
+	Name                   *string `json:"name,omitempty"`
+	Description            *string `json:"description,omitempty"`
+	Published              *bool   `json:"published,omitempty"`
+	SkipSwaggerValidations *bool   `json:"skip_swagger_validations,omitempty"`
+	Body                   *string `json:"body,omitempty"`
+	ServiceID              *int64  `json:"service_id,omitempty"`
+	CreatedAt              *string `json:"created_at,omitempty"`
+	UpdatedAt              *string `json:"updated_at,omitempty"`
 }
 
 type ActiveDoc struct {
