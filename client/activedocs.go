@@ -126,3 +126,37 @@ func (c *ThreeScaleClient) DeleteActiveDoc(id int64) error {
 
 	return handleJsonResp(resp, http.StatusOK, nil)
 }
+
+// UnbindActiveDocFromProduct removes product relationship from activedoc object
+func (c *ThreeScaleClient) UnbindActiveDocFromProduct(id int64) (*ActiveDoc, error) {
+	endpoint := fmt.Sprintf(activeDocEndpoint, id)
+
+	data := struct {
+		ID        int64  `json:"id"`
+		ServiceID *int64 `json:"service_id"`
+	}{
+		id,
+		nil,
+	}
+
+	bodyArr, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+	body := bytes.NewReader(bodyArr)
+
+	req, err := c.buildUpdateJSONReq(endpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	respObj := &ActiveDoc{}
+	err = handleJsonResp(resp, http.StatusOK, respObj)
+	return respObj, err
+}
