@@ -1,6 +1,7 @@
 package client
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"net/http"
 	"net/url"
@@ -669,4 +670,30 @@ type ActiveDoc struct {
 
 type ActiveDocList struct {
 	ActiveDocs []ActiveDoc `json:"api_docs"`
+}
+
+type APIcastPolicySchema struct {
+	Summary       *string          `json:"summary,omitempty"`
+	Description   *[]string        `json:"description,omitempty"`
+	Name          *string          `json:"name,omitempty"`
+	Schema        *string          `json:"$schema,omitempty"`
+	Version       *string          `json:"version,omitempty"`
+	Configuration *json.RawMessage `json:"configuration,omitempty"`
+}
+
+type APIcastPolicyItem struct {
+	ID        *int64               `json:"id,omitempty"`
+	Name      *string              `json:"name,omitempty"`
+	Version   *string              `json:"version,omitempty"`
+	Schema    *APIcastPolicySchema `json:"schema,omitempty"`
+	CreatedAt *string              `json:"created_at,omitempty"`
+	UpdatedAt *string              `json:"updated_at,omitempty"`
+}
+
+type APIcastPolicy struct {
+	Element APIcastPolicyItem `json:"policy"`
+}
+
+type APIcastPolicyRegistry struct {
+	Items []APIcastPolicy `json:"policies"`
 }
