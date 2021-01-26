@@ -332,6 +332,7 @@ type ProxyRule struct {
 
 type Params map[string]string
 
+// Deprecated: Use DeveloperUser instead
 type User struct {
 	ID        int64  `json:"id"`
 	State     string `json:"state"`
@@ -340,10 +341,12 @@ type User struct {
 	AccountID int64  `json:"account_id"`
 }
 
+// Deprecated: Use DeveloperUserItem instead
 type UserElem struct {
 	User User `json:"user"`
 }
 
+// Deprecated: Use DeveloperUser instead
 type UserList struct {
 	Users []UserElem `json:"users"`
 }
@@ -741,4 +744,23 @@ type APIcastPolicy struct {
 
 type APIcastPolicyRegistry struct {
 	Items []APIcastPolicy `json:"policies"`
+}
+
+type DeveloperUserItem struct {
+	ID        *int64  `json:"id,omitempty"`
+	State     *string `json:"state,omitempty"`
+	Role      *string `json:"role,omitempty"`
+	Username  *string `json:"username,omitempty"`
+	Password  *string `json:"password,omitempty"`
+	Email     *string `json:"email,omitempty"`
+	CreatedAt *string `json:"created_at,omitempty"`
+	UpdatedAt *string `json:"updated_at,omitempty"`
+}
+
+type DeveloperUser struct {
+	Element DeveloperUserItem `json:"user"`
+}
+
+type DeveloperUserList struct {
+	Items []DeveloperUser `json:"users"`
 }
