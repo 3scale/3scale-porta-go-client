@@ -365,6 +365,51 @@ type AccountList struct {
 	Accounts []AccountElem `json:"accounts"`
 }
 
+type BillingAddressSpec struct {
+	Company     *string `json:"company,omitempty"`
+	Address     *string `json:"address,omitempty"`
+	Address1    *string `json:"address1,omitempty"`
+	Address2    *string `json:"address2,omitempty"`
+	PhoneNumber *string `json:"phone_number,omitempty"`
+	City        *string `json:"city,omitempty"`
+	Country     *string `json:"country,omitempty"`
+	State       *string `json:"state,omitempty"`
+	Zip         *string `json:"zip,omitempty"`
+}
+
+type DeveloperAccountItem struct {
+	ID                     *int64              `json:"id,omitempty"`
+	State                  *string             `json:"state,omitempty"`
+	CreditCardStored       *bool               `json:"credit_card_stored,omitempty"`
+	MonthlyBillingEnabled  *bool               `json:"monthly_billing_enabled,omitempty"`
+	MonthlyChargingEnabled *bool               `json:"monthly_charging_enabled,omitempty"`
+	VatRate                *string             `json:"vat_rate,omitempty"`
+	OrgName                *string             `json:"org_name,omitempty"`
+	City                   *string             `json:"city,omitempty"`
+	OrgLegalAddress        *string             `json:"org_legaladdress,omitempty"`
+	BillingAddress         *BillingAddressSpec `json:"billing_address,omitempty"`
+	BussinessCategory      *string             `json:"business_category,omitempty"`
+	OrgLegaladdressCont    *string             `json:"org_legaladdress_cont,omitempty"`
+	VatCode                *string             `json:"vat_code,omitempty"`
+	TelephoneNumber        *string             `json:"telephone_number,omitempty"`
+	FiscalCode             *string             `json:"fiscale_code,omitempty"`
+	StateRegion            *string             `json:"state_region,omitempty"`
+	Country                *string             `json:"country,omitempty"`
+	Zip                    *string             `json:"zip,omitempty"`
+	PrimaryBussiness       *string             `json:"primary_business,omitempty"`
+	PoNumber               *string             `json:"po_number,omitempty"`
+	CreatedAt              *string             `json:"created_at,omitempty"`
+	UpdatedAt              *string             `json:"updated_at,omitempty"`
+}
+
+type DeveloperAccount struct {
+	Element DeveloperAccountItem `json:"account"`
+}
+
+type DeveloperAccountList struct {
+	Items []DeveloperAccount `json:"accounts"`
+}
+
 type AccessToken struct {
 	ID         int64    `json:"id"`
 	Name       string   `json:"name"`
