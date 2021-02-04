@@ -1,18 +1,13 @@
-version: 2 
-jobs: 
+---
+version: 2.1
+jobs:
   build:
     docker:
-      - image: circleci/golang:1.11
-        environment:
-          SOURCE: /go/src/github.com/3scale/3scale-porta-go-client      
-
-    working_directory: /go/src/github.com/3scale/3scale-porta-go-client
-    steps: 
+      - image: circleci/golang:1.13.7
+    steps:
       - checkout
-
       - run:
           name: Run unit tests
           command: |
             make test
             bash <(curl -s https://codecov.io/bash)
-
