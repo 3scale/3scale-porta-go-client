@@ -1,0 +1,24 @@
+{
+  "services": [
+    {
+      "service": {
+        "id": 45498,
+        "name": "Product 01",
+        "system_name": "product_01",
+        "description": "",
+        "created_at": "2019-11-29T17:18:02+01:00",
+        "updated_at": "2020-03-25T15:07:22+01:00"
+      }
+    },
+    {
+      "service": {
+        "id": 55498,
+        "name": "Product 02",
+        "system_name": "product_02",
+        "description": "",
+        "created_at": "2019-11-29T17:18:02+01:00",
+        "updated_at": "2020-03-25T15:07:22+01:00"
+      }
+    }
+  ]
+}
