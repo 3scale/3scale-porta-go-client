@@ -31,11 +31,10 @@ func (c *ThreeScaleClient) ReadProxy(svcID string) (Proxy, error) {
 	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return p, err
 	}
+	defer resp.Body.Close()
 
 	err = handleXMLResp(resp, http.StatusOK, &p)
 	return p, err
@@ -74,11 +73,11 @@ func (c *ThreeScaleClient) UpdateProxy(svcId string, params Params) (Proxy, erro
 	}
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return p, err
 	}
+
+	defer resp.Body.Close()
 
 	err = handleXMLResp(resp, http.StatusOK, &p)
 	return p, err
@@ -100,11 +99,11 @@ func (c *ThreeScaleClient) ListProxyConfig(svcId string, env string) (ProxyConfi
 	req.URL.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return pc, err
 	}
+
+	defer resp.Body.Close()
 
 	err = handleJsonResp(resp, http.StatusOK, &pc)
 	return pc, err
@@ -125,11 +124,11 @@ func (c *ThreeScaleClient) PromoteProxyConfig(svcId string, env string, version 
 	}
 
 	resp, err := c.httpClient.Do(req)
-	defer resp.Body.Close()
-
 	if err != nil {
 		return pe, err
 	}
+
+	defer resp.Body.Close()
 
 	err = handleJsonResp(resp, http.StatusCreated, &pe)
 	return pe, err
@@ -151,7 +150,7 @@ func (c *ThreeScaleClient) getProxyConfig(endpoint string) (ProxyConfigElement, 
 	if err != nil {
 		return pc, err
 	}
-	timeTaken := time.Now().Sub(start)
+	timeTaken := time.Since(start)
 	if c.afterResponse != nil {
 		c.afterResponse(resp.StatusCode, timeTaken)
 	}
