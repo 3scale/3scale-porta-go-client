@@ -159,7 +159,8 @@ func TestAdminPortalPathIsPreserved(t *testing.T) {
 	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<services></services>`))),
 		}
 	})).ListServices()
 	if err != nil {
@@ -170,7 +171,8 @@ func TestAdminPortalPathIsPreserved(t *testing.T) {
 	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<service></service>`))),
 		}
 	})).CreateService("any")
 	if err != nil {
@@ -181,7 +183,8 @@ func TestAdminPortalPathIsPreserved(t *testing.T) {
 	err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services/any.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
 		}
 	})).DeleteService("any")
 	if err != nil {
@@ -192,7 +195,8 @@ func TestAdminPortalPathIsPreserved(t *testing.T) {
 	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services/any.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<service></service>`))),
 		}
 	})).UpdateService("any", NewParams())
 	if err != nil {
