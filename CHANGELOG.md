@@ -4,6 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.6.0] - Mar 31, 2022
+
+### Fixed
+
+- Fix delete product [#44](https://github.com/3scale/3scale-porta-go-client/pull/44)
+
 ## [0.5.0] - Feb 03, 2021
 
 ### Added
