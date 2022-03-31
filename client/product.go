@@ -106,8 +106,7 @@ func (c *ThreeScaleClient) DeleteProduct(id int64) error {
 	}
 	defer resp.Body.Close()
 
-	var empty struct{}
-	return handleJsonResp(resp, http.StatusOK, &empty)
+	return handleJsonResp(resp, http.StatusOK, nil)
 }
 
 // ListProducts List existing products

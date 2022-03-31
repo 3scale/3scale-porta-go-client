@@ -148,46 +148,60 @@ func TestAdminPortalPathIsPreserved(t *testing.T) {
 		t.Errorf("expected trailing slash to be stripped")
 	}
 
-	verify:= func(req *http.Request, path string) {
+	verify := func(req *http.Request, path string) {
 		equals(t, host, req.URL.Hostname())
 		equals(t, port, req.URL.Port())
 		equals(t, scheme, req.URL.Scheme)
 		equals(t, path, req.URL.Path)
 	}
 
-
 	// Test path is preserved for GET
-	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<services></services>`))),
 		}
 	})).ListServices()
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Test path is preserved for POST
-	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
 		verify(req, "/example/admin/api/services.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<service></service>`))),
 		}
 	})).CreateService("any")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Test path is preserved for DELETE
-	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
-		verify(req,"/example/admin/api/services/any.xml")
+	err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req, "/example/admin/api/services/any.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
 		}
 	})).DeleteService("any")
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	// Test path is preserved for PUT
-	NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
-		verify(req,"/example/admin/api/services/any.xml")
+	_, err = NewThreeScale(ap, "any", NewTestClient(func(req *http.Request) *http.Response {
+		verify(req, "/example/admin/api/services/any.xml")
 		return &http.Response{
-			Body: ioutil.NopCloser(bytes.NewBuffer([]byte(""))),
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer([]byte(`<service></service>`))),
 		}
 	})).UpdateService("any", NewParams())
-
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func equals(t *testing.T, exp, act interface{}) {

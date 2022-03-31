@@ -1004,3 +1004,176 @@ func TestReadProduct(t *testing.T) {
 		t.Fatalf("Expected %v; got %v", *product, *obj)
 	}
 }
+
+func TestCreateProduct(t *testing.T) {
+	var (
+		name      string = "producttest1"
+		productID int64  = 98765
+		params    Params = Params{}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != productListResourceEndpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", productListResourceEndpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		product := &Product{
+			Element: ProductItem{
+				ID:   productID,
+				Name: name,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(product)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateProduct(name, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("CreateProduct returned nil")
+	}
+
+	if obj.Element.ID != productID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", productID, obj.Element.ID)
+	}
+
+	if obj.Element.Name != name {
+		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", name, obj.Element.Name)
+	}
+}
+
+func TestUpdateProduct(t *testing.T) {
+	var (
+		productID int64 = 98765
+		endpoint        = fmt.Sprintf(productResourceEndpoint, productID)
+		params          = Params{"name": "newName"}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		product := &Product{
+			Element: ProductItem{
+				ID:   productID,
+				Name: "newName",
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(product)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateProduct(productID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("product returned nil")
+	}
+
+	if obj.Element.ID != productID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", productID, obj.Element.ID)
+	}
+
+	if obj.Element.Name != "newName" {
+		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", "newName", obj.Element.Name)
+	}
+}
+
+func TestDeleteProduct(t *testing.T) {
+	var (
+		productID int64 = 98765
+		endpoint        = fmt.Sprintf(productResourceEndpoint, productID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteProduct(productID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestListProducts(t *testing.T) {
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != productListResourceEndpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", backendListResourceEndpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(t, "product_list_fixture.json"))),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	productList, err := c.ListProducts()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if productList == nil {
+		t.Fatal("product list returned nil")
+	}
+
+	if len(productList.Products) != 2 {
+		t.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2, len(productList.Products))
+	}
+}
