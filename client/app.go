@@ -10,6 +10,7 @@ import (
 const (
 	appCreate = "/admin/api/accounts/%s/applications.json"
 	appList   = "/admin/api/accounts/%d/applications.json"
+	appDelete = "/admin/api/accounts/%s/applications/%s.xml"
 )
 
 // CreateApp - Create an application.
@@ -61,4 +62,22 @@ func (c *ThreeScaleClient) ListApplications(accountID int64) (*ApplicationList, 
 	applicationList := &ApplicationList{}
 	err = handleJsonResp(resp, http.StatusOK, applicationList)
 	return applicationList, err
+}
+
+// DeleteApplication Delete existing application
+func (c *ThreeScaleClient) DeleteApplication(accountID, id string) error {
+	applicationEndpoint := fmt.Sprintf(appDelete, accountID, id)
+
+	req, err := c.buildDeleteReq(applicationEndpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
 }
