@@ -2,9 +2,11 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -162,8 +164,8 @@ func TestListApp(t *testing.T) {
 func TestDeleteApp(t *testing.T) {
 	const (
 		accessToken = "someAccessToken"
-		accountID   = "321"
-		appID       = "21"
+		accountID   = 321
+		appID       = 21
 	)
 
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
@@ -189,4 +191,312 @@ func TestDeleteApp(t *testing.T) {
 		t.Fatal(err)
 	}
 
+}
+
+func TestUpdateApplication(t *testing.T) {
+	var (
+		appID     int64 = 12
+		accountID int64 = 321
+		params          = Params{"": "newDescription "}
+		endpoint        = fmt.Sprintf(appUpdate, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		application := &Application{
+			UserAccountID: strconv.FormatInt(accountID, 10),
+			ID:            appID,
+			AppName:       "newName",
+		}
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.UpdateApplication(accountID, appID, params)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if obj.ID != appID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", appID, obj.ID)
+	}
+
+	if obj.AppName != "newName" {
+		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", "newName", obj.AppName)
+	}
+}
+
+func TestChangeApplicationPlan(t *testing.T) {
+	var (
+		appID     int64 = 12
+		accountID int64 = 321
+		planID    int64 = 14
+		endpoint        = fmt.Sprintf(appChangePlan, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		application := &Application{
+			UserAccountID: strconv.FormatInt(accountID, 10),
+			ID:            appID,
+			PlanID:        16,
+		}
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.ChangeApplicationPlan(accountID, appID, planID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if obj.ID != appID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", appID, obj.ID)
+	}
+
+	if obj.PlanID != 16 {
+		t.Fatalf("obj name does not match. Expected [%d]; got [%d]", 16, obj.PlanID)
+	}
+}
+
+func TestCreateApplicationCustomPlan(t *testing.T) {
+	var (
+		appID      int64 = 12
+		accountID  int64 = 321
+		ID         int64 = 21
+		Name             = "customPlan"
+		SystemName       = "customPlan"
+		Custom           = true
+		endpoint         = fmt.Sprintf(appCreatePlanCustomization, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		applicationPlan := &ApplicationPlan{
+			Element: ApplicationPlanItem{
+				ID:         ID,
+				Name:       Name,
+				SystemName: SystemName,
+				Custom:     Custom,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(applicationPlan)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.CreateApplicationCustomPlan(accountID, appID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("CreateCustomPlan returned nil")
+	}
+
+	if obj.Element.ID != ID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", ID, obj.Element.ID)
+	}
+
+	if obj.Element.Name != Name {
+		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", Name, obj.Element.Name)
+	}
+
+	if obj.Element.SystemName != SystemName {
+		t.Fatalf("obj system name does not match. Expected [%s]; got [%s]", SystemName, obj.Element.SystemName)
+	}
+
+	if obj.Element.Custom != true {
+		t.Fatalf("obj custom bool does not match. Expected [%t]; got [%t]", true, obj.Element.Custom)
+	}
+}
+
+func TestDeleteApplicationCustomPlan(t *testing.T) {
+	var (
+		accountID int64 = 321
+		appID     int64 = 12
+		endpoint        = fmt.Sprintf(appDeletePlanCustomization, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(strings.NewReader("")),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteApplicationCustomPlan(accountID, appID)
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestApplicationSuspend(t *testing.T) {
+	var (
+		appID     int64 = 12
+		accountID int64 = 321
+		state           = "suspended"
+		endpoint        = fmt.Sprintf(appSuspend, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		application := &Application{
+			ID:            appID,
+			UserAccountID: strconv.FormatInt(accountID, 10),
+			State:         state,
+		}
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.ApplicationSuspend(accountID, appID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if obj.State != state {
+		t.Fatalf("obj state does not match. Expected [%d]; got [%d]", appID, obj.ID)
+	}
+}
+
+func TestApplicationResume(t *testing.T) {
+	var (
+		appID     int64 = 12
+		accountID int64 = 321
+		state           = "Live"
+		endpoint        = fmt.Sprintf(appResume, accountID, appID)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPut {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		application := &Application{
+			ID:            appID,
+			UserAccountID: strconv.FormatInt(accountID, 10),
+			State:         state,
+		}
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.ApplicationResume(accountID, appID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if obj.State != state {
+		t.Fatalf("obj state does not match. Expected [%d]; got [%d]", appID, obj.ID)
+	}
 }

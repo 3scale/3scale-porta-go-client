@@ -4,13 +4,20 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
 const (
-	appCreate = "/admin/api/accounts/%s/applications.json"
-	appList   = "/admin/api/accounts/%d/applications.json"
-	appDelete = "/admin/api/accounts/%s/applications/%s.xml"
+	appCreate                  = "/admin/api/accounts/%s/applications.json"
+	appList                    = "/admin/api/accounts/%d/applications.json"
+	appUpdate                  = "/admin/api/accounts/%d/applications/%d.json"
+	appDelete                  = "/admin/api/accounts/%d/applications/%d.xml"
+	appChangePlan              = "/admin/api/accounts/%d/applications/%d/change_plan.json"
+	appCreatePlanCustomization = "/admin/api/accounts/%d/applications/%d/customize_plan.json"
+	appDeletePlanCustomization = "/admin/api/accounts/%d/applications/%d/decustomize_plan.xml"
+	appSuspend                 = "/admin/api/accounts/%d/applications/%d/suspend.json"
+	appResume                  = "/admin/api/accounts/%d/applications/%d/resume.json"
 )
 
 // CreateApp - Create an application.
@@ -65,7 +72,7 @@ func (c *ThreeScaleClient) ListApplications(accountID int64) (*ApplicationList, 
 }
 
 // DeleteApplication Delete existing application
-func (c *ThreeScaleClient) DeleteApplication(accountID, id string) error {
+func (c *ThreeScaleClient) DeleteApplication(accountID, id int64) error {
 	applicationEndpoint := fmt.Sprintf(appDelete, accountID, id)
 
 	req, err := c.buildDeleteReq(applicationEndpoint, nil)
@@ -80,4 +87,135 @@ func (c *ThreeScaleClient) DeleteApplication(accountID, id string) error {
 	defer resp.Body.Close()
 
 	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+func (c *ThreeScaleClient) UpdateApplication(accountID, id int64, params Params) (*Application, error) {
+	values := url.Values{}
+	for k, v := range params {
+		values.Add(k, v)
+	}
+
+	applicationEndpoint := fmt.Sprintf(appUpdate, accountID, id)
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(applicationEndpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	application := &Application{}
+	err = handleJsonResp(resp, http.StatusOK, application)
+	return application, err
+}
+
+func (c *ThreeScaleClient) ChangeApplicationPlan(accountID, id, planId int64) (*Application, error) {
+	values := url.Values{}
+	values.Add("plan_id", strconv.FormatInt(planId, 10))
+
+	applicationEndpoint := fmt.Sprintf(appChangePlan, accountID, id)
+
+	body := strings.NewReader(values.Encode())
+	req, err := c.buildUpdateReq(applicationEndpoint, body)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	application := &Application{}
+	err = handleJsonResp(resp, http.StatusOK, application)
+	return application, err
+}
+
+func (c *ThreeScaleClient) CreateApplicationCustomPlan(accountId, id int64) (*ApplicationPlan, error) {
+	endpoint := fmt.Sprintf(appCreatePlanCustomization, accountId, id)
+
+	req, err := c.buildUpdateReq(endpoint, nil)
+	if err != nil {
+		return nil, httpReqError
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	applicationPlan := &ApplicationPlan{}
+	err = handleJsonResp(resp, http.StatusOK, applicationPlan)
+	if err != nil {
+		return nil, err
+	}
+	return applicationPlan, nil
+}
+
+func (c *ThreeScaleClient) DeleteApplicationCustomPlan(accountID, id int64) error {
+	applicationEndpoint := fmt.Sprintf(appDeletePlanCustomization, accountID, id)
+
+	req, err := c.buildUpdateReq(applicationEndpoint, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	return handleJsonResp(resp, http.StatusOK, nil)
+}
+
+func (c *ThreeScaleClient) ApplicationSuspend(accountId, id int64) (*Application, error) {
+	endpoint := fmt.Sprintf(appSuspend, accountId, id)
+
+	req, err := c.buildUpdateReq(endpoint, nil)
+	if err != nil {
+		return nil, httpReqError
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	application := &Application{}
+	err = handleJsonResp(resp, http.StatusOK, application)
+	if err != nil {
+		return nil, err
+	}
+	return application, nil
+}
+
+func (c *ThreeScaleClient) ApplicationResume(accountId, id int64) (*Application, error) {
+	endpoint := fmt.Sprintf(appResume, accountId, id)
+
+	req, err := c.buildUpdateReq(endpoint, nil)
+	if err != nil {
+		return nil, httpReqError
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	application := &Application{}
+	err = handleJsonResp(resp, http.StatusOK, application)
+	if err != nil {
+		return nil, err
+	}
+	return application, nil
 }
