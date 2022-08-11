@@ -9,7 +9,8 @@ import (
 )
 
 const (
-	appCreate                  = "/admin/api/accounts/%s/applications.json"
+	appRead                    = "/admin/api/accounts/%d/applications/%d.xml"
+	appCreate                  = "/admin/api/accounts/%d/applications.json"
 	appList                    = "/admin/api/accounts/%d/applications.json"
 	appUpdate                  = "/admin/api/accounts/%d/applications/%d.json"
 	appDelete                  = "/admin/api/accounts/%d/applications/%d.xml"
@@ -18,19 +19,24 @@ const (
 	appDeletePlanCustomization = "/admin/api/accounts/%d/applications/%d/decustomize_plan.xml"
 	appSuspend                 = "/admin/api/accounts/%d/applications/%d/suspend.json"
 	appResume                  = "/admin/api/accounts/%d/applications/%d/resume.json"
+	listAllApplications        = "/admin/api/applications.json"
 )
 
 // CreateApp - Create an application.
 // The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
-func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name string, description string) (Application, error) {
+func (c *ThreeScaleClient) CreateApp(accountId, planId int64, name, description string, params Params) (Application, error) {
 	var app Application
 	endpoint := fmt.Sprintf(appCreate, accountId)
 
 	values := url.Values{}
-	values.Add("account_id", accountId)
-	values.Add("plan_id", planId)
+	values.Add("user_account_id", strconv.FormatInt(accountId, 10))
+	values.Add("plan_id", strconv.FormatInt(planId, 10))
 	values.Add("name", name)
 	values.Add("description", description)
+
+	for k, v := range params {
+		values.Add(k, v)
+	}
 
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPostReq(endpoint, body)
@@ -218,4 +224,42 @@ func (c *ThreeScaleClient) ApplicationResume(accountId, id int64) (*Application,
 		return nil, err
 	}
 	return application, nil
+}
+
+func (c *ThreeScaleClient) Application(accountId, id int64) (*Application, error) {
+	endpoint := fmt.Sprintf(appRead, accountId, id)
+
+	req, err := c.buildGetJSONReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	application := &Application{}
+	err = handleJsonResp(resp, http.StatusOK, application)
+	return application, err
+}
+
+func (c *ThreeScaleClient) ListAllApplications() (*ApplicationList, error) {
+	endpoint := fmt.Sprintf(listAllApplications)
+
+	req, err := c.buildGetJSONReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	applicationList := &ApplicationList{}
+	err = handleJsonResp(resp, http.StatusOK, applicationList)
+	return applicationList, err
 }
