@@ -17,7 +17,7 @@ func TestCreateApp(t *testing.T) {
 	const (
 		credential = "123"
 		accountID  = "321"
-		planID     = "abc"
+		planID     = "123"
 		name       = "test"
 	)
 
@@ -210,10 +210,12 @@ func TestUpdateApplication(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
 		}
 
-		application := &Application{
-			UserAccountID: strconv.FormatInt(accountID, 10),
-			ID:            appID,
-			AppName:       "newName",
+		application := &ApplicationElem{
+			Application{
+				UserAccountID: strconv.FormatInt(accountID, 10),
+				ID:            appID,
+				AppName:       "newName",
+			},
 		}
 		responseBodyBytes, err := json.Marshal(application)
 		if err != nil {
@@ -264,10 +266,12 @@ func TestChangeApplicationPlan(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
 		}
 
-		application := &Application{
-			UserAccountID: strconv.FormatInt(accountID, 10),
-			ID:            appID,
-			PlanID:        16,
+		application := &ApplicationElem{
+			Application{
+				UserAccountID: strconv.FormatInt(accountID, 10),
+				ID:            appID,
+				PlanID:        16,
+			},
 		}
 		responseBodyBytes, err := json.Marshal(application)
 		if err != nil {
@@ -353,20 +357,20 @@ func TestCreateApplicationCustomPlan(t *testing.T) {
 		t.Fatal("CreateCustomPlan returned nil")
 	}
 
-	if obj.Element.ID != ID {
-		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", ID, obj.Element.ID)
+	if obj.ID != ID {
+		t.Fatalf("obj ID does not match. Expected [%d]; got [%d]", ID, obj.ID)
 	}
 
-	if obj.Element.Name != Name {
-		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", Name, obj.Element.Name)
+	if obj.Name != Name {
+		t.Fatalf("obj name does not match. Expected [%s]; got [%s]", Name, obj.Name)
 	}
 
-	if obj.Element.SystemName != SystemName {
-		t.Fatalf("obj system name does not match. Expected [%s]; got [%s]", SystemName, obj.Element.SystemName)
+	if obj.SystemName != SystemName {
+		t.Fatalf("obj system name does not match. Expected [%s]; got [%s]", SystemName, obj.SystemName)
 	}
 
-	if obj.Element.Custom != true {
-		t.Fatalf("obj custom bool does not match. Expected [%t]; got [%t]", true, obj.Element.Custom)
+	if obj.Custom != true {
+		t.Fatalf("obj custom bool does not match. Expected [%t]; got [%t]", true, obj.Custom)
 	}
 }
 
@@ -418,10 +422,12 @@ func TestApplicationSuspend(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
 		}
 
-		application := &Application{
-			ID:            appID,
-			UserAccountID: strconv.FormatInt(accountID, 10),
-			State:         state,
+		application := &ApplicationElem{
+			Application{
+				ID:            appID,
+				UserAccountID: strconv.FormatInt(accountID, 10),
+				State:         state,
+			},
 		}
 		responseBodyBytes, err := json.Marshal(application)
 		if err != nil {
@@ -468,10 +474,12 @@ func TestApplicationResume(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
 		}
 
-		application := &Application{
-			ID:            appID,
-			UserAccountID: strconv.FormatInt(accountID, 10),
-			State:         state,
+		application := &ApplicationElem{
+			Application{
+				ID:            appID,
+				UserAccountID: strconv.FormatInt(accountID, 10),
+				State:         state,
+			},
 		}
 		responseBodyBytes, err := json.Marshal(application)
 		if err != nil {
@@ -498,5 +506,141 @@ func TestApplicationResume(t *testing.T) {
 
 	if obj.State != state {
 		t.Fatalf("obj state does not match. Expected [%d]; got [%d]", appID, obj.ID)
+	}
+}
+
+func TestReadApplication(t *testing.T) {
+	var (
+		ID          int64 = 987
+		accountID   int64 = 98765
+		planID      int64 = 21
+		description       = "description"
+		endpoint          = fmt.Sprintf(appRead, accountID, ID)
+		application       = &ApplicationElem{
+			Application{
+				ID:            ID,
+				PlanID:        planID,
+				UserAccountID: strconv.FormatInt(accountID, 10),
+				Description:   description,
+			},
+		}
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.Application(accountID, ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if *obj != application.Application {
+		t.Fatalf("Expected %v; got %v", application, *obj)
+	}
+}
+
+func TestListAllApplications(t *testing.T) {
+	const (
+		accessToken = "someAccessToken"
+	)
+
+	inputs := []struct {
+		Name             string
+		ExpectErr        bool
+		ResponseCode     int
+		ResponseBodyFile string
+		ExpectedErrorMsg string
+	}{
+		{
+			Name:             "ListAppOK",
+			ExpectErr:        false,
+			ResponseCode:     200,
+			ResponseBodyFile: "app_list_response_fixture.json",
+			ExpectedErrorMsg: "",
+		},
+		{
+			Name:             "ListAppErr",
+			ExpectErr:        true,
+			ResponseCode:     400,
+			ResponseBodyFile: "error_response_fixture.json",
+			ExpectedErrorMsg: "Test Error",
+		},
+	}
+
+	for _, input := range inputs {
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.Method != http.MethodGet {
+				t.Fatalf("wrong helper called")
+			}
+
+			if req.URL.Path != fmt.Sprintf(listAllApplications) {
+				t.Fatalf("wrong url generated")
+			}
+
+			bodyReader := bytes.NewReader(helperLoadBytes(t, input.ResponseBodyFile))
+			return &http.Response{
+				StatusCode: input.ResponseCode,
+				Body:       ioutil.NopCloser(bodyReader),
+				Header:     make(http.Header),
+			}
+		})
+
+		c := NewThreeScale(NewTestAdminPortal(t), accessToken, httpClient)
+
+		t.Run(input.Name, func(subTest *testing.T) {
+			appList, err := c.ListAllApplications()
+			if input.ExpectErr {
+				if err == nil {
+					subTest.Fatalf("client operation did not return error")
+				}
+
+				apiError, ok := err.(ApiErr)
+				if !ok {
+					subTest.Fatalf("expected ApiErr error type")
+				}
+
+				if !strings.Contains(apiError.Error(), input.ExpectedErrorMsg) {
+					subTest.Fatalf("Expected [%s]: got [%s] ", input.ExpectedErrorMsg, apiError.Error())
+				}
+
+			} else {
+				if err != nil {
+					subTest.Fatal(err)
+				}
+				if appList == nil {
+					subTest.Fatalf("appList not parsed")
+				}
+				if len(appList.Applications) == 0 {
+					subTest.Fatalf("appList empty")
+				}
+				if appList.Applications[0].Application.ID != 146 {
+					subTest.Fatalf("appList not parsed")
+				}
+			}
+		})
 	}
 }

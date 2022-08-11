@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -147,5 +148,54 @@ func TestListAccountsErrors(t *testing.T) {
 				subTest.Fatalf("Expected [%s]: got [%s] ", tt.ExpectedErrorMsg, apiError.Error())
 			}
 		})
+	}
+}
+
+func TestFindAccount(t *testing.T) {
+	var (
+		accountID int64 = 3
+		username        = "John"
+		endpoint        = findAccount
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+		}
+
+		account := &AccountElem{
+			Account{
+				ID: accountID,
+			},
+		}
+		responseBodyBytes, err := json.Marshal(account)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	obj, err := c.FindAccount(username)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if obj == nil {
+		t.Fatal("application returned nil")
+	}
+
+	if obj.ID != accountID {
+		t.Fatalf("obj state does not match. Expected [%d]; got [%d]", accountID, obj.ID)
 	}
 }

@@ -9,6 +9,7 @@ import (
 )
 
 const (
+	appRead                    = "/admin/api/accounts/%d/applications/%d.json"
 	appCreate                  = "/admin/api/accounts/%s/applications.json"
 	appList                    = "/admin/api/accounts/%d/applications.json"
 	appUpdate                  = "/admin/api/accounts/%d/applications/%d.json"
@@ -18,11 +19,12 @@ const (
 	appDeletePlanCustomization = "/admin/api/accounts/%d/applications/%d/decustomize_plan.xml"
 	appSuspend                 = "/admin/api/accounts/%d/applications/%d/suspend.json"
 	appResume                  = "/admin/api/accounts/%d/applications/%d/resume.json"
+	listAllApplications        = "/admin/api/applications.json"
 )
 
 // CreateApp - Create an application.
 // The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
-func (c *ThreeScaleClient) CreateApp(accountId string, planId string, name string, description string) (Application, error) {
+func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string) (Application, error) {
 	var app Application
 	endpoint := fmt.Sprintf(appCreate, accountId)
 
@@ -109,9 +111,9 @@ func (c *ThreeScaleClient) UpdateApplication(accountID, id int64, params Params)
 	}
 	defer resp.Body.Close()
 
-	application := &Application{}
-	err = handleJsonResp(resp, http.StatusOK, application)
-	return application, err
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
+	return &apiResp.Application, err
 }
 
 func (c *ThreeScaleClient) ChangeApplicationPlan(accountID, id, planId int64) (*Application, error) {
@@ -132,12 +134,12 @@ func (c *ThreeScaleClient) ChangeApplicationPlan(accountID, id, planId int64) (*
 	}
 	defer resp.Body.Close()
 
-	application := &Application{}
-	err = handleJsonResp(resp, http.StatusOK, application)
-	return application, err
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
+	return &apiResp.Application, err
 }
 
-func (c *ThreeScaleClient) CreateApplicationCustomPlan(accountId, id int64) (*ApplicationPlan, error) {
+func (c *ThreeScaleClient) CreateApplicationCustomPlan(accountId, id int64) (*ApplicationPlanItem, error) {
 	endpoint := fmt.Sprintf(appCreatePlanCustomization, accountId, id)
 
 	req, err := c.buildUpdateReq(endpoint, nil)
@@ -151,12 +153,12 @@ func (c *ThreeScaleClient) CreateApplicationCustomPlan(accountId, id int64) (*Ap
 	}
 	defer resp.Body.Close()
 
-	applicationPlan := &ApplicationPlan{}
-	err = handleJsonResp(resp, http.StatusOK, applicationPlan)
+	apiResp := &ApplicationPlan{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
 	if err != nil {
 		return nil, err
 	}
-	return applicationPlan, nil
+	return &apiResp.Element, nil
 }
 
 func (c *ThreeScaleClient) DeleteApplicationCustomPlan(accountID, id int64) error {
@@ -190,12 +192,12 @@ func (c *ThreeScaleClient) ApplicationSuspend(accountId, id int64) (*Application
 	}
 	defer resp.Body.Close()
 
-	application := &Application{}
-	err = handleJsonResp(resp, http.StatusOK, application)
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
 	if err != nil {
 		return nil, err
 	}
-	return application, nil
+	return &apiResp.Application, nil
 }
 
 func (c *ThreeScaleClient) ApplicationResume(accountId, id int64) (*Application, error) {
@@ -212,10 +214,48 @@ func (c *ThreeScaleClient) ApplicationResume(accountId, id int64) (*Application,
 	}
 	defer resp.Body.Close()
 
-	application := &Application{}
-	err = handleJsonResp(resp, http.StatusOK, application)
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
 	if err != nil {
 		return nil, err
 	}
-	return application, nil
+	return &apiResp.Application, nil
+}
+
+func (c *ThreeScaleClient) Application(accountId, id int64) (*Application, error) {
+	endpoint := fmt.Sprintf(appRead, accountId, id)
+
+	req, err := c.buildGetJSONReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	apiResp := &ApplicationElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
+	return &apiResp.Application, err
+}
+
+func (c *ThreeScaleClient) ListAllApplications() (*ApplicationList, error) {
+	endpoint := fmt.Sprintf(listAllApplications)
+
+	req, err := c.buildGetJSONReq(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	apiResp := &ApplicationList{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
+	return apiResp, err
 }
