@@ -4,6 +4,13 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.7.0] - Sept 12, 2022
+
+### Added
+
+- Applicaion CRUDL endpoints [#48](https://github.com/3scale/3scale-porta-go-client/pull/48)
+- Added Colours to unit tests [#46](https://github.com/3scale/3scale-porta-go-client/pull/46)
+
 ## [0.6.0] - Mar 31, 2022
 
 ### Fixed
