@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 )
@@ -1146,18 +1147,58 @@ func TestDeleteProduct(t *testing.T) {
 }
 
 func TestListProducts(t *testing.T) {
+
+	productGenerator := func(startingIndex, n int) ProductList {
+		pList := ProductList{
+			Products: make([]Product, 0, n),
+		}
+
+		for idx := 0; idx < n; idx++ {
+			pList.Products = append(pList.Products, Product{
+				Element: ProductItem{ID: int64(idx + startingIndex)},
+			})
+		}
+
+		return pList
+	}
+
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		// Will serve: 3 pages
+		// page 1 => PRODUCTS_PER_PAGE
+		// page 2 => PRODUCTS_PER_PAGE
+		// page 3 => 51
 		if req.URL.Path != productListResourceEndpoint {
-			t.Fatalf("Path does not match. Expected [%s]; got [%s]", backendListResourceEndpoint, req.URL.Path)
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", productListResourceEndpoint, req.URL.Path)
 		}
 
 		if req.Method != http.MethodGet {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
 		}
 
+		if req.URL.Query().Get("per_page") != strconv.Itoa(PRODUCTS_PER_PAGE) {
+			t.Fatalf("per_page param does not match. Expected [%d]; got [%s]", PRODUCTS_PER_PAGE, req.URL.Query().Get("per_page"))
+		}
+
+		var list ProductList
+
+		if req.URL.Query().Get("page") == "1" {
+			list = productGenerator(PRODUCTS_PER_PAGE*0, PRODUCTS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "2" {
+			list = productGenerator(PRODUCTS_PER_PAGE*1, PRODUCTS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "3" {
+			list = productGenerator(PRODUCTS_PER_PAGE*2, 51)
+		} else {
+			t.Fatalf("page param unexpected value; got [%s]", req.URL.Query().Get("page"))
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(t, "product_list_fixture.json"))),
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
 			Header:     make(http.Header),
 		}
 	})
@@ -1173,7 +1214,95 @@ func TestListProducts(t *testing.T) {
 		t.Fatal("product list returned nil")
 	}
 
-	if len(productList.Products) != 2 {
-		t.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2, len(productList.Products))
+	if len(productList.Products) != 2*PRODUCTS_PER_PAGE+51 {
+		t.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2*PRODUCTS_PER_PAGE+51, len(productList.Products))
 	}
+}
+
+func TestListProductsPerPage(t *testing.T) {
+	t.Run("page and per_page params used", func(subT *testing.T) {
+		var (
+			pageNum int = 4
+			perPage int = 2
+		)
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != productListResourceEndpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", productListResourceEndpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != strconv.Itoa(pageNum) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", pageNum, req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != strconv.Itoa(perPage) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", perPage, req.URL.Query().Get("per_page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(subT, "product_list_fixture.json"))),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		productList, err := c.ListProductsPerPage(pageNum, perPage)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if productList == nil {
+			subT.Fatal("product list returned nil")
+		}
+
+		if len(productList.Products) != 2 {
+			subT.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2, len(productList.Products))
+		}
+	})
+
+	t.Run("page and per_page params not used", func(subT *testing.T) {
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != productListResourceEndpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", productListResourceEndpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != "" {
+				subT.Fatalf("Query param page does not match. Expected empty; got [%s]", req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != "" {
+				subT.Fatalf("page param does not match. Expected empty; got [%s]", req.URL.Query().Get("per_page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(subT, "product_list_fixture.json"))),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		productList, err := c.ListProductsPerPage()
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if productList == nil {
+			subT.Fatal("product list returned nil")
+		}
+
+		if len(productList.Products) != 2 {
+			subT.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2, len(productList.Products))
+		}
+	})
 }
