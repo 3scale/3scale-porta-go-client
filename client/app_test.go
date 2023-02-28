@@ -598,7 +598,7 @@ func TestListAllApplications(t *testing.T) {
 				t.Fatalf("wrong helper called")
 			}
 
-			if req.URL.Path != fmt.Sprintf(listAllApplications) {
+			if req.URL.Path != listAllApplications {
 				t.Fatalf("wrong url generated")
 			}
 
