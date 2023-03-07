@@ -128,6 +128,18 @@ threescaleClient := client.NewThreeScale(adminPortal, threescaleAccessToken, &ht
 $ make test
 ```
 
+Optionally, add `TEST_NAME` makefile variable to run specific test
+
+```sh
+make test TEST_NAME=TestActivateUserErrors
+```
+
+or even subtest
+
+```sh
+make test TEST_NAME=TestActivateUserErrors/UnexpectedHTTPStatusCode
+```
+
 ## Contributing
 
 Bug reports and pull requests are welcome on [GitHub](https://github.com/3scale/3scale-porta-go-client)
