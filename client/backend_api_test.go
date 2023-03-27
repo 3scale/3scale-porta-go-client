@@ -6,12 +6,32 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 	"testing"
 )
 
 func TestListBackendApi(t *testing.T) {
+	backendGenerator := func(startingIndex, n int) BackendApiList {
+		pList := BackendApiList{
+			Backends: make([]BackendApi, 0, n),
+		}
+
+		for idx := 0; idx < n; idx++ {
+			pList.Backends = append(pList.Backends, BackendApi{
+				Element: BackendApiItem{ID: int64(idx + startingIndex)},
+			})
+		}
+
+		return pList
+	}
+
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		// Will serve: 3 pages
+		// page 1 => BACKENDS_PER_PAGE
+		// page 2 => BACKENDS_PER_PAGE
+		// page 3 => 51
+
 		if req.URL.Path != backendListResourceEndpoint {
 			t.Fatalf("Path does not match. Expected [%s]; got [%s]", backendListResourceEndpoint, req.URL.Path)
 		}
@@ -20,9 +40,30 @@ func TestListBackendApi(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
 		}
 
+		if req.URL.Query().Get("per_page") != strconv.Itoa(BACKENDS_PER_PAGE) {
+			t.Fatalf("per_page param does not match. Expected [%d]; got [%s]", BACKENDS_PER_PAGE, req.URL.Query().Get("per_page"))
+		}
+
+		var list BackendApiList
+
+		if req.URL.Query().Get("page") == "1" {
+			list = backendGenerator(BACKENDS_PER_PAGE*0, BACKENDS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "2" {
+			list = backendGenerator(BACKENDS_PER_PAGE*1, BACKENDS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "3" {
+			list = backendGenerator(BACKENDS_PER_PAGE*2, 51)
+		} else {
+			t.Fatalf("page param unexpected value; got [%s]", req.URL.Query().Get("page"))
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
+		if err != nil {
+			t.Fatal(err)
+		}
+
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(t, "backend_api_list_fixture.json"))),
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
 			Header:     make(http.Header),
 		}
 	})
@@ -38,9 +79,97 @@ func TestListBackendApi(t *testing.T) {
 		t.Fatal("backend list returned nil")
 	}
 
-	if len(backendApiList.Backends) != 3 {
-		t.Fatalf("Then number of backend_api's does not match. Expected [%d]; got [%d]", 3, len(backendApiList.Backends))
+	if len(backendApiList.Backends) != 2*BACKENDS_PER_PAGE+51 {
+		t.Fatalf("Then number of backend_api's does not match. Expected [%d]; got [%d]", 2*BACKENDS_PER_PAGE+51, len(backendApiList.Backends))
 	}
+}
+
+func TestListBackendApisPerPage(t *testing.T) {
+	t.Run("page and per_page params used", func(subT *testing.T) {
+		var (
+			pageNum int = 4
+			perPage int = 2
+		)
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != backendListResourceEndpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", backendListResourceEndpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != strconv.Itoa(pageNum) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", pageNum, req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != strconv.Itoa(perPage) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", perPage, req.URL.Query().Get("per_page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(subT, "backend_api_list_fixture.json"))),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		backendList, err := c.ListBackendApisPerPage(pageNum, perPage)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if backendList == nil {
+			subT.Fatal("backend list returned nil")
+		}
+
+		if len(backendList.Backends) != 3 {
+			subT.Fatalf("Then number of backends does not match. Expected [%d]; got [%d]", 3, len(backendList.Backends))
+		}
+	})
+
+	t.Run("page and per_page params not used", func(subT *testing.T) {
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != productListResourceEndpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", productListResourceEndpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != "" {
+				subT.Fatalf("Query param page does not match. Expected empty; got [%s]", req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != "" {
+				subT.Fatalf("page param does not match. Expected empty; got [%s]", req.URL.Query().Get("per_page"))
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewReader(helperLoadBytes(subT, "product_list_fixture.json"))),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		productList, err := c.ListProductsPerPage()
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if productList == nil {
+			subT.Fatal("product list returned nil")
+		}
+
+		if len(productList.Products) != 2 {
+			subT.Fatalf("Then number of products does not match. Expected [%d]; got [%d]", 2, len(productList.Products))
+		}
+	})
 }
 
 func TestCreateBackendApi(t *testing.T) {
