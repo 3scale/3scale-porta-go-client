@@ -311,11 +311,47 @@ func (c *ThreeScaleClient) UpdateBackendApiMethod(backendapiID, hitsID, methodID
 
 // ListBackendapiMetrics List existing backend metric
 func (c *ThreeScaleClient) ListBackendapiMetrics(backendapiID int64) (*MetricJSONList, error) {
+	// Keep asking until the results length is lower than "per_page" param
+	currentPage := 1
+	metricList := &MetricJSONList{}
+
+	allResultsPerPage := false
+	for next := true; next; next = allResultsPerPage {
+		tmpList, err := c.ListBackendapiMetricsPerPage(backendapiID, currentPage, BACKEND_METRICS_PER_PAGE)
+		if err != nil {
+			return nil, err
+		}
+
+		metricList.Metrics = append(metricList.Metrics, tmpList.Metrics...)
+
+		allResultsPerPage = len(tmpList.Metrics) == BACKEND_METRICS_PER_PAGE
+		currentPage += 1
+	}
+
+	return metricList, nil
+}
+
+// ListBackendapiMetricsPerPage List existing backend metric for a given page
+// paginationValues[0] = Page in the paginated list. Defaults to 1 for the API, as the client will not send the page param.
+// paginationValues[1] = Number of results per page. Default and max is 500 for the aPI, as the client will not send the per_page param.
+func (c *ThreeScaleClient) ListBackendapiMetricsPerPage(backendapiID int64, paginationValues ...int) (*MetricJSONList, error) {
+	queryValues := url.Values{}
+
+	if len(paginationValues) > 0 {
+		queryValues.Add("page", strconv.Itoa(paginationValues[0]))
+	}
+
+	if len(paginationValues) > 1 {
+		queryValues.Add("per_page", strconv.Itoa(paginationValues[1]))
+	}
+
 	endpoint := fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
 	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return nil, err
 	}
+
+	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {

@@ -779,32 +779,48 @@ func TestListBackendApiMetrics(t *testing.T) {
 		endpoint           = fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
 	)
 
+	metricGenerator := func(startingIndex, n int) MetricJSONList {
+		pList := MetricJSONList{
+			Metrics: make([]MetricJSON, 0, n),
+		}
+
+		for idx := 0; idx < n; idx++ {
+			pList.Metrics = append(pList.Metrics, MetricJSON{
+				Element: MetricItem{ID: int64(idx + startingIndex)},
+			})
+		}
+
+		return pList
+	}
+
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		// Will serve: 3 pages
+		// page 1 => BACKEND_METRICS_PER_PAGE
+		// page 2 => BACKEND_METRICS_PER_PAGE
+		// page 3 => 51
+
 		if req.URL.Path != endpoint {
 			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
 		}
 
 		if req.Method != http.MethodGet {
-			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			t.Fatalf("Metric does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
 		}
 
-		list := &MetricJSONList{
-			Metrics: []MetricJSON{
-				{
-					Element: MetricItem{
-						ID:         1,
-						Name:       "metric01",
-						SystemName: "metric01",
-					},
-				},
-				{
-					Element: MetricItem{
-						ID:         2,
-						Name:       "metric02",
-						SystemName: "metric02",
-					},
-				},
-			},
+		if req.URL.Query().Get("per_page") != strconv.Itoa(BACKEND_METRICS_PER_PAGE) {
+			t.Fatalf("per_page param does not match. Expected [%d]; got [%s]", BACKEND_METRICS_PER_PAGE, req.URL.Query().Get("per_page"))
+		}
+
+		var list MetricJSONList
+
+		if req.URL.Query().Get("page") == "1" {
+			list = metricGenerator(BACKEND_METRICS_PER_PAGE*0, BACKEND_METRICS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "2" {
+			list = metricGenerator(BACKEND_METRICS_PER_PAGE*1, BACKEND_METRICS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "3" {
+			list = metricGenerator(BACKEND_METRICS_PER_PAGE*2, 51)
+		} else {
+			t.Fatalf("page param unexpected value; got [%s]", req.URL.Query().Get("page"))
 		}
 
 		responseBodyBytes, err := json.Marshal(list)
@@ -830,9 +846,126 @@ func TestListBackendApiMetrics(t *testing.T) {
 		t.Fatal("backend metric list returned nil")
 	}
 
-	if len(list.Metrics) != 2 {
-		t.Fatalf("Then number of backend_api metric's does not match. Expected [%d]; got [%d]", 2, len(list.Metrics))
+	if len(list.Metrics) != 2*BACKEND_METRICS_PER_PAGE+51 {
+		t.Fatalf("Then number of metrics's does not match. Expected [%d]; got [%d]", 2*BACKEND_METRICS_PER_PAGE+51, len(list.Metrics))
 	}
+}
+
+func TestListBackendapiMetricsPerPage(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		endpoint           = fmt.Sprintf(backendMetricListResourceEndpoint, backendapiID)
+	)
+
+	t.Run("page and per_page params used", func(subT *testing.T) {
+		var (
+			pageNum int = 4
+			perPage int = 2
+		)
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != endpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				t.Fatalf("Metric does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != strconv.Itoa(pageNum) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", pageNum, req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != strconv.Itoa(perPage) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", perPage, req.URL.Query().Get("per_page"))
+			}
+
+			metricList := &MetricJSONList{
+				Metrics: []MetricJSON{
+					{Element: MetricItem{ID: 1, Name: "metric01", SystemName: "metric01"}},
+					{Element: MetricItem{ID: 2, Name: "metric02", SystemName: "metric02"}},
+				},
+			}
+
+			responseBodyBytes, err := json.Marshal(metricList)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		metricList, err := c.ListBackendapiMetricsPerPage(backendapiID, pageNum, perPage)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if metricList == nil {
+			subT.Fatal("metric list returned nil")
+		}
+
+		if len(metricList.Metrics) != 2 {
+			subT.Fatalf("Then number of metrics does not match. Expected [%d]; got [%d]", 2, len(metricList.Metrics))
+		}
+	})
+
+	t.Run("page and per_page params not used", func(subT *testing.T) {
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != endpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				t.Fatalf("Metric does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != "" {
+				subT.Fatalf("Query param page does not match. Expected empty; got [%s]", req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != "" {
+				subT.Fatalf("page param does not match. Expected empty; got [%s]", req.URL.Query().Get("per_page"))
+			}
+
+			metricList := &MetricJSONList{
+				Metrics: []MetricJSON{
+					{Element: MetricItem{ID: 1, Name: "metric01", SystemName: "metric01"}},
+					{Element: MetricItem{ID: 2, Name: "metric02", SystemName: "metric02"}},
+				},
+			}
+
+			responseBodyBytes, err := json.Marshal(metricList)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		metricList, err := c.ListBackendapiMetricsPerPage(backendapiID)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if metricList == nil {
+			subT.Fatal("metric list returned nil")
+		}
+
+		if len(metricList.Metrics) != 2 {
+			subT.Fatalf("Then number of mehods not match. Expected [%d]; got [%d]", 2, len(metricList.Metrics))
+		}
+	})
 }
 
 func TestCreateBackendApiMetric(t *testing.T) {
