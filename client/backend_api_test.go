@@ -381,7 +381,26 @@ func TestListBackendApiMethods(t *testing.T) {
 		endpoint           = fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
 	)
 
+	methodGenerator := func(startingIndex, n int) MethodList {
+		pList := MethodList{
+			Methods: make([]Method, 0, n),
+		}
+
+		for idx := 0; idx < n; idx++ {
+			pList.Methods = append(pList.Methods, Method{
+				Element: MethodItem{ID: int64(idx + startingIndex)},
+			})
+		}
+
+		return pList
+	}
+
 	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		// Will serve: 3 pages
+		// page 1 => BACKEND_METRICS_PER_PAGE
+		// page 2 => BACKEND_METRICS_PER_PAGE
+		// page 3 => 51
+
 		if req.URL.Path != endpoint {
 			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
 		}
@@ -390,26 +409,23 @@ func TestListBackendApiMethods(t *testing.T) {
 			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
 		}
 
-		methodList := &MethodList{
-			Methods: []Method{
-				{
-					Element: MethodItem{
-						ID:         1,
-						Name:       "method01",
-						SystemName: "method01",
-					},
-				},
-				{
-					Element: MethodItem{
-						ID:         2,
-						Name:       "method02",
-						SystemName: "method02",
-					},
-				},
-			},
+		if req.URL.Query().Get("per_page") != strconv.Itoa(BACKEND_METRICS_PER_PAGE) {
+			t.Fatalf("per_page param does not match. Expected [%d]; got [%s]", BACKEND_METRICS_PER_PAGE, req.URL.Query().Get("per_page"))
 		}
 
-		responseBodyBytes, err := json.Marshal(methodList)
+		var list MethodList
+
+		if req.URL.Query().Get("page") == "1" {
+			list = methodGenerator(BACKEND_METRICS_PER_PAGE*0, BACKEND_METRICS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "2" {
+			list = methodGenerator(BACKEND_METRICS_PER_PAGE*1, BACKEND_METRICS_PER_PAGE)
+		} else if req.URL.Query().Get("page") == "3" {
+			list = methodGenerator(BACKEND_METRICS_PER_PAGE*2, 51)
+		} else {
+			t.Fatalf("page param unexpected value; got [%s]", req.URL.Query().Get("page"))
+		}
+
+		responseBodyBytes, err := json.Marshal(list)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -432,9 +448,127 @@ func TestListBackendApiMethods(t *testing.T) {
 		t.Fatal("backend method list returned nil")
 	}
 
-	if len(list.Methods) != 2 {
-		t.Fatalf("Then number of backend_api method's does not match. Expected [%d]; got [%d]", 2, len(list.Methods))
+	if len(list.Methods) != 2*BACKEND_METRICS_PER_PAGE+51 {
+		t.Fatalf("Then number of methods's does not match. Expected [%d]; got [%d]", 2*BACKEND_METRICS_PER_PAGE+51, len(list.Methods))
 	}
+}
+
+func TestListBackendapiMethodsPerPage(t *testing.T) {
+	var (
+		backendapiID int64 = 98765
+		hitsID       int64 = 1
+		endpoint           = fmt.Sprintf(backendMethodListResourceEndpoint, backendapiID, hitsID)
+	)
+
+	t.Run("page and per_page params used", func(subT *testing.T) {
+		var (
+			pageNum int = 4
+			perPage int = 2
+		)
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != endpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != strconv.Itoa(pageNum) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", pageNum, req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != strconv.Itoa(perPage) {
+				subT.Fatalf("page param does not match. Expected [%d]; got [%s]", perPage, req.URL.Query().Get("per_page"))
+			}
+
+			methodList := &MethodList{
+				Methods: []Method{
+					{Element: MethodItem{ID: 1, Name: "method01", SystemName: "method01"}},
+					{Element: MethodItem{ID: 2, Name: "method02", SystemName: "method02"}},
+				},
+			}
+
+			responseBodyBytes, err := json.Marshal(methodList)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		methodList, err := c.ListBackendapiMethodsPerPage(backendapiID, hitsID, pageNum, perPage)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if methodList == nil {
+			subT.Fatal("method list returned nil")
+		}
+
+		if len(methodList.Methods) != 2 {
+			subT.Fatalf("Then number of methods does not match. Expected [%d]; got [%d]", 2, len(methodList.Methods))
+		}
+	})
+
+	t.Run("page and per_page params not used", func(subT *testing.T) {
+		httpClient := NewTestClient(func(req *http.Request) *http.Response {
+			if req.URL.Path != endpoint {
+				subT.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+			}
+
+			if req.Method != http.MethodGet {
+				subT.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodGet, req.Method)
+			}
+
+			if req.URL.Query().Get("page") != "" {
+				subT.Fatalf("Query param page does not match. Expected empty; got [%s]", req.URL.Query().Get("page"))
+			}
+
+			if req.URL.Query().Get("per_page") != "" {
+				subT.Fatalf("page param does not match. Expected empty; got [%s]", req.URL.Query().Get("per_page"))
+			}
+
+			methodList := &MethodList{
+				Methods: []Method{
+					{Element: MethodItem{ID: 1, Name: "method01", SystemName: "method01"}},
+					{Element: MethodItem{ID: 2, Name: "method02", SystemName: "method02"}},
+				},
+			}
+
+			responseBodyBytes, err := json.Marshal(methodList)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			return &http.Response{
+				StatusCode: http.StatusOK,
+				Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+				Header:     make(http.Header),
+			}
+		})
+
+		credential := "someAccessToken"
+		c := NewThreeScale(NewTestAdminPortal(subT), credential, httpClient)
+		methodList, err := c.ListBackendapiMethodsPerPage(backendapiID, hitsID)
+		if err != nil {
+			subT.Fatal(err)
+		}
+
+		if methodList == nil {
+			subT.Fatal("method list returned nil")
+		}
+
+		if len(methodList.Methods) != 2 {
+			subT.Fatalf("Then number of mehods not match. Expected [%d]; got [%d]", 2, len(methodList.Methods))
+		}
+	})
 }
 
 func TestCreateBackendApiMethod(t *testing.T) {
