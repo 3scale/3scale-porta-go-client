@@ -21,6 +21,7 @@ const (
 	backendUsageResourceEndpoint          = "/admin/api/services/%d/backend_usages/%d.json"
 	BACKENDS_PER_PAGE                 int = 500
 	BACKEND_METRICS_PER_PAGE          int = 500
+	BACKEND_MAPPINGRULES_PER_PAGE     int = 500
 )
 
 // ListBackends List existing backends
@@ -453,13 +454,48 @@ func (c *ThreeScaleClient) UpdateBackendApiMetric(backendapiID, metricID int64, 
 	return item, err
 }
 
-// ListBackendapiMappingRules List existing backend mapping rules
 func (c *ThreeScaleClient) ListBackendapiMappingRules(backendapiID int64) (*MappingRuleJSONList, error) {
+	// Keep asking until the results length is lower than "per_page" param
+	currentPage := 1
+	mpList := &MappingRuleJSONList{}
+
+	allResultsPerPage := false
+	for next := true; next; next = allResultsPerPage {
+		tmpList, err := c.ListBackendapiMappingRulesPerPage(backendapiID, currentPage, BACKEND_MAPPINGRULES_PER_PAGE)
+		if err != nil {
+			return nil, err
+		}
+
+		mpList.MappingRules = append(mpList.MappingRules, tmpList.MappingRules...)
+
+		allResultsPerPage = len(tmpList.MappingRules) == BACKEND_MAPPINGRULES_PER_PAGE
+		currentPage += 1
+	}
+
+	return mpList, nil
+}
+
+// ListBackendapiMappingRulesPerPage List existing backend mapping rules for a given page
+// paginationValues[0] = Page in the paginated list. Defaults to 1 for the API, as the client will not send the page param.
+// paginationValues[1] = Number of results per page. Default and max is 500 for the aPI, as the client will not send the per_page param.
+func (c *ThreeScaleClient) ListBackendapiMappingRulesPerPage(backendapiID int64, paginationValues ...int) (*MappingRuleJSONList, error) {
+	queryValues := url.Values{}
+
+	if len(paginationValues) > 0 {
+		queryValues.Add("page", strconv.Itoa(paginationValues[0]))
+	}
+
+	if len(paginationValues) > 1 {
+		queryValues.Add("per_page", strconv.Itoa(paginationValues[1]))
+	}
+
 	endpoint := fmt.Sprintf(backendMRListResourceEndpoint, backendapiID)
 	req, err := c.buildGetReq(endpoint)
 	if err != nil {
 		return nil, err
 	}
+
+	req.URL.RawQuery = queryValues.Encode()
 
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
