@@ -22,9 +22,8 @@ const (
 	listAllApplications        = "/admin/api/applications.json"
 )
 
-// CreateApp - Create an application.
-// The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
-func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string) (Application, error) {
+// CreateApplication - Create an application.
+func (c *ThreeScaleClient) CreateApplication(accountId, planId, name, description string, params Params) (Application, error) {
 	var app Application
 	endpoint := fmt.Sprintf(appCreate, accountId)
 
@@ -33,6 +32,10 @@ func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string
 	values.Add("plan_id", planId)
 	values.Add("name", name)
 	values.Add("description", description)
+
+	for key, val := range params {
+		values.Add(key, val)
+	}
 
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPostReq(endpoint, body)
@@ -52,6 +55,13 @@ func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string
 		return app, err
 	}
 	return apiResp.Application, nil
+}
+
+// CreateApp - Create an application.
+// The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
+// DEPRECATED use CreateApplication instead
+func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string) (Application, error) {
+	return c.CreateApplication(accountId, planId, name, description, nil)
 }
 
 // ListApplications - List of applications for a given account.
