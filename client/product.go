@@ -401,6 +401,11 @@ func (c *ThreeScaleClient) ListProductMappingRules(productID int64) (*MappingRul
 
 // CreateProductMappingRule Create 3scale product mappingrule
 func (c *ThreeScaleClient) CreateProductMappingRule(productID int64, params Params) (*MappingRuleJSON, error) {
+	valid, err := c.validateMappingRulesDuplication(productID, params)
+	if err != nil || !valid {
+		return nil, err
+	}
+
 	endpoint := fmt.Sprintf(productMappingRuleListResourceEndpoint, productID)
 
 	values := url.Values{}
@@ -551,4 +556,20 @@ func (c *ThreeScaleClient) DeployProductProxy(productID int64) (*ProxyJSON, erro
 	item := &ProxyJSON{}
 	err = handleJsonResp(resp, http.StatusCreated, item)
 	return item, err
+}
+
+func (c *ThreeScaleClient) validateMappingRulesDuplication(productID int64, params Params) (bool, error) {
+	existingList, err := c.ListProductMappingRules(productID)
+	if err != nil {
+		return false, err
+	}
+
+	for _, existingRule := range existingList.MappingRules {
+		if params["pattern"] == existingRule.Element.Pattern &&
+			params["http_method"] == existingRule.Element.HTTPMethod &&
+			params["metric_id"] == strconv.FormatInt(existingRule.Element.MetricID, 10) {
+			return false, fmt.Errorf("duplicated Mapping Rule; already exists: Pattern [%s], HTTPMethod [%s] and same MetricID [%s]", existingRule.Element.Pattern, existingRule.Element.HTTPMethod, existingRule.Element.MetricID)
+		}
+	}
+	return true, nil
 }
