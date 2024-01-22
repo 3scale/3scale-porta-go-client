@@ -427,7 +427,12 @@ type Signup struct {
 }
 
 type Tenant struct {
-	Signup Signup `json:"signup"`
+	Signup              Signup  `json:"signup"`
+	FromEmail           *string `json:"fromEmail,omitempty"`
+	SupportEmail        *string `json:"supportEmail,omitempty"`
+	FinanceSupportEmail *string `json:"financeSupportEmail,omitempty"`
+	SiteAccessCode      *string `json:"siteAccessCode,omitempty"`
+	StateEvent          *string `json:"stateEvent,omitempty"`
 }
 
 type ProductItem struct {
