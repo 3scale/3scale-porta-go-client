@@ -358,6 +358,10 @@ type Account struct {
 	SupportEmail string `json:"support_email"`
 	AdminDomain  string `json:"admin_domain"`
 	Domain       string `json:"domain"`
+	// Optional info paramaters
+	FromEmail           string `json:"from_email,omitempty"`
+	FinanceSupportEmail string `json:"finance_support_email,omitempty"`
+	SiteAccessCode      string `json:"site_access_code,omitempty"`
 }
 
 type AccountElem struct {
@@ -427,11 +431,7 @@ type Signup struct {
 }
 
 type Tenant struct {
-	Signup              Signup  `json:"signup"`
-	FromEmail           *string `json:"fromEmail,omitempty"`
-	FinanceSupportEmail *string `json:"financeSupportEmail,omitempty"`
-	SiteAccessCode      *string `json:"siteAccessCode,omitempty"`
-	StateEvent          *string `json:"stateEvent,omitempty"`
+	Signup Signup `json:"signup"`
 }
 
 type ProductItem struct {
