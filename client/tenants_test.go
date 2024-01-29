@@ -175,6 +175,18 @@ func TestShowTenantOk(t *testing.T) {
 	if tenant.Signup.Account.OrgName != "Corp24" {
 		t.Fatalf("OrgName: expected (%s) found (%s)", "Corp24", tenant.Signup.Account.OrgName)
 	}
+
+	if tenant.Signup.Account.FromEmail != "no-reply@amp24.127.0.0.1.nip.io" {
+		t.Fatalf("Email: expected (%s) found (%s)", "no-reply@amp24.127.0.0.1.nip.io", tenant.Signup.Account.FromEmail)
+	}
+
+	if tenant.Signup.Account.FinanceSupportEmail != "admin@corp24.com" {
+		t.Fatalf("Email: expected (%s) found (%s)", "admin@corp24.com", tenant.Signup.Account.FinanceSupportEmail)
+	}
+
+	if tenant.Signup.Account.SiteAccessCode != "5fe935046b" {
+		t.Fatalf("OrgName: expected (%s) found (%s)", "5fe935046b", tenant.Signup.Account.SiteAccessCode)
+	}
 }
 
 func TestShowTenantErrors(t *testing.T) {

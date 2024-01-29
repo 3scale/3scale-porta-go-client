@@ -358,6 +358,10 @@ type Account struct {
 	SupportEmail string `json:"support_email"`
 	AdminDomain  string `json:"admin_domain"`
 	Domain       string `json:"domain"`
+	// Optional info paramaters
+	FromEmail           string `json:"from_email,omitempty"`
+	FinanceSupportEmail string `json:"finance_support_email,omitempty"`
+	SiteAccessCode      string `json:"site_access_code,omitempty"`
 }
 
 type AccountElem struct {
