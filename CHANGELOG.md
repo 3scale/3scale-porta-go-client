@@ -4,6 +4,12 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased]
 
+## [0.10.0] - Feb 01, 2024
+
+### Added
+
+- Added Info attributes to account [59](https://github.com/3scale/3scale-porta-go-client/pull/59)
+
 ## [0.9.0] - Mar 31, 2023
 
 ### Added
@@ -63,7 +69,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.1.0] - Nov 16, 2020
 
-[Unreleased]: https://github.com/3scale/3scale-porta-go-client/compare/v0.9.0...HEAD
+[Unreleased]: https://github.com/3scale/3scale-porta-go-client/compare/v0.10.0...HEAD
+[0.10.0]: https://github.com/3scale/3scale-porta-go-client/releases/tag/v0.10.0
 [0.9.0]: https://github.com/3scale/3scale-porta-go-client/releases/tag/v0.9.0
 [0.8.0]: https://github.com/3scale/3scale-porta-go-client/releases/tag/v0.8.0
 [0.7.0]: https://github.com/3scale/3scale-porta-go-client/releases/tag/v0.7.0
