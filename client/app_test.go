@@ -523,6 +523,7 @@ func TestReadApplication(t *testing.T) {
 				PlanID:        planID,
 				UserAccountID: strconv.FormatInt(accountID, 10),
 				Description:   description,
+				ApplicationId: "7034ff61",
 			},
 		}
 	)
