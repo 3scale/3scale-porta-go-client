@@ -510,6 +510,65 @@ func TestApplicationResume(t *testing.T) {
 	}
 }
 
+func TestApplicationKeys(t *testing.T) {
+	var (
+		appID          int64 = 12
+		accountID      int64 = 321
+		endpoint             = fmt.Sprintf(appKeys, accountID, appID)
+		applicationKey       = "4efd48e3e2ecfdea1fc21eeddf0610b9"
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodGet {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPut, req.Method)
+		}
+
+		appKeys := ApplicationKeysElem{
+			Keys: []ApplicationKeyWrapper{
+				{
+					Key: ApplicationKey{
+						Value: applicationKey,
+					},
+				},
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(appKeys)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	keys, err := c.ApplicationKeys(accountID, appID)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if keys == nil {
+		t.Fatal("application keys returned nil")
+	}
+
+	if len(keys) != 1 {
+		t.Fatalf("application keys length does not match. Expected [%d]; got [%d]", 1, len(keys))
+	}
+
+	if keys[0].Value != applicationKey {
+		t.Fatalf("application key does not match. Expected [%s]; got [%s]", applicationKey, keys[0].Value)
+	}
+}
+
 func TestReadApplication(t *testing.T) {
 	var (
 		ID          int64 = 987
