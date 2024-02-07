@@ -19,6 +19,7 @@ const (
 	appDeletePlanCustomization = "/admin/api/accounts/%d/applications/%d/decustomize_plan.json"
 	appSuspend                 = "/admin/api/accounts/%d/applications/%d/suspend.json"
 	appResume                  = "/admin/api/accounts/%d/applications/%d/resume.json"
+	appKeys                    = "/admin/api/accounts/%d/applications/%d/keys.json"
 	listAllApplications        = "/admin/api/applications.json"
 )
 
@@ -220,6 +221,32 @@ func (c *ThreeScaleClient) ApplicationResume(accountId, id int64) (*Application,
 		return nil, err
 	}
 	return &apiResp.Application, nil
+}
+
+func (c *ThreeScaleClient) ApplicationKeys(accountId, id int64) ([]ApplicationKey, error) {
+	endpoint := fmt.Sprintf(appKeys, accountId, id)
+
+	req, err := c.buildGetReq(endpoint)
+	if err != nil {
+		return nil, httpReqError
+	}
+
+	resp, err := c.httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	apiResp := &ApplicationKeysElem{}
+	err = handleJsonResp(resp, http.StatusOK, apiResp)
+	if err != nil {
+		return nil, err
+	}
+	var keys []ApplicationKey
+	for _, key := range apiResp.Keys {
+		keys = append(keys, key.Key)
+	}
+	return keys, nil
 }
 
 func (c *ThreeScaleClient) Application(accountId, id int64) (*Application, error) {
