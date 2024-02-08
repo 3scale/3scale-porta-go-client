@@ -56,6 +56,23 @@ type ApplicationList struct {
 	Applications []ApplicationElem `json:"applications"`
 }
 
+// ApplicationKeysElem - Holds a list of applications keys
+type ApplicationKeysElem struct {
+	Keys []ApplicationKeyWrapper `json:"keys"`
+}
+
+// ApplicationKey - Holds a application key
+type ApplicationKeyWrapper struct {
+	Key ApplicationKey `json:"key"`
+}
+
+// ApplicationKey - Holds a application key
+type ApplicationKey struct {
+	Value     string `json:"value"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+}
+
 // ApplicationPlansList - Holds a list of application plans
 // Deprecated. Use ApplicationPlanJSONList instead
 type ApplicationPlansList struct {
