@@ -41,6 +41,7 @@ type Application struct {
 	PlanID                  int64  `json:"plan_id"`
 	AppName                 string `json:"name"`
 	Description             string `json:"description"`
+	ApplicationId           string `json:"application_id"`
 	ExtraFields             string `json:"extra_fields"`
 	Error                   string `json:"error,omitempty"`
 }
