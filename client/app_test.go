@@ -510,6 +510,63 @@ func TestApplicationResume(t *testing.T) {
 	}
 }
 
+func TestCreateApplicationKey(t *testing.T) {
+	var (
+		appID          int64 = 12
+		accountID      int64 = 321
+		endpoint             = fmt.Sprintf(appKeyCreate, accountID, appID)
+		applicationKey       = "4efd48e3e2ecfdea1fc21eeddf0610b9"
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodPost {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodPost, req.Method)
+		}
+
+		application := ApplicationElem{
+			Application: Application{
+				ID: appID,
+			},
+		}
+
+		responseBodyBytes, err := json.Marshal(application)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusCreated,
+			Body:       ioutil.NopCloser(bytes.NewBuffer(responseBodyBytes)),
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	application, err := c.CreateApplicationKey(accountID, appID, applicationKey)
+	applicationRandom, errRandom := c.CreateApplicationRandomKey(accountID, appID)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if errRandom != nil {
+		t.Fatal(errRandom)
+	}
+
+	if application.ID != appID {
+		t.Fatalf("application id does not match. Expected [%d]; got [%d]", appID, application.ID)
+	}
+
+	if applicationRandom.ID != appID {
+		t.Fatalf("application id does not match. Expected [%d]; got [%d]", appID, applicationRandom.ID)
+	}
+}
+
 func TestApplicationKeys(t *testing.T) {
 	var (
 		appID          int64 = 12
