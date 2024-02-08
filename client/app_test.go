@@ -567,6 +567,38 @@ func TestCreateApplicationKey(t *testing.T) {
 	}
 }
 
+func TestDeleteApplicationKey(t *testing.T) {
+	var (
+		appID          int64 = 12
+		accountID      int64 = 321
+		applicationKey       = "4efd48e3e2ecfdea1fc21eeddf0610b9"
+		endpoint             = fmt.Sprintf(appKeyDelete, accountID, appID, applicationKey)
+	)
+
+	httpClient := NewTestClient(func(req *http.Request) *http.Response {
+		if req.URL.Path != endpoint {
+			t.Fatalf("Path does not match. Expected [%s]; got [%s]", endpoint, req.URL.Path)
+		}
+
+		if req.Method != http.MethodDelete {
+			t.Fatalf("Method does not match. Expected [%s]; got [%s]", http.MethodDelete, req.Method)
+		}
+
+		return &http.Response{
+			StatusCode: http.StatusOK,
+			Header:     make(http.Header),
+		}
+	})
+
+	credential := "someAccessToken"
+	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
+	err := c.DeleteApplicationKey(accountID, appID, applicationKey)
+
+	if err != nil {
+		t.Fatal(err)
+	}
+}
+
 func TestApplicationKeys(t *testing.T) {
 	var (
 		appID          int64 = 12
