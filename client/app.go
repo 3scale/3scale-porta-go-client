@@ -11,7 +11,7 @@ import (
 
 const (
 	appRead                    = "/admin/api/accounts/%d/applications/%d.json"
-	appCreate                  = "/admin/api/accounts/%s/applications.json"
+	appCreate                  = "/admin/api/accounts/%d/applications.json"
 	appList                    = "/admin/api/accounts/%d/applications.json"
 	appUpdate                  = "/admin/api/accounts/%d/applications/%d.json"
 	appDelete                  = "/admin/api/accounts/%d/applications/%d.json"
@@ -26,17 +26,26 @@ const (
 	listAllApplications        = "/admin/api/applications.json"
 )
 
-// CreateApp - Create an application.
-// The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
-func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string) (Application, error) {
+// CreateApplication - Create an application.
+// params:
+// * description: Description of the application to be created.
+// * user_key: User Key (API Key) of the application to be created.
+// * application_id: App ID or Client ID (for OAuth and OpenID Connect authentication modes) of the application to be created.
+// * application_key: App Key or Client Secret (for OAuth and OpenID Connect authentication modes) of the application to be created.
+// * redirect_url: Redirect URL for the OAuth request.
+// * first_traffic_at: Timestamp of the first call made by the application.
+// * first_daily_traffic_at: Timestamp of the first call on the last day when traffic was registered for the application ('Traffic On').
+func (c *ThreeScaleClient) CreateApplication(accountId, planId int64, name string, params Params) (Application, error) {
 	var app Application
-	endpoint := fmt.Sprintf(appCreate, accountId)
 
 	values := url.Values{}
-	values.Add("account_id", accountId)
-	values.Add("plan_id", planId)
+	for k, v := range params {
+		values.Add(k, v)
+	}
+	values.Add("plan_id", strconv.FormatInt(planId, 10))
 	values.Add("name", name)
-	values.Add("description", description)
+
+	endpoint := fmt.Sprintf(appCreate, accountId)
 
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPostReq(endpoint, body)
@@ -56,6 +65,28 @@ func (c *ThreeScaleClient) CreateApp(accountId, planId, name, description string
 		return app, err
 	}
 	return apiResp.Application, nil
+}
+
+// Deprecated: use CreateApplication instead
+// CreateApp - Create an application.
+// The application object can be extended with Fields Definitions in the Admin Portal where you can add/remove fields
+func (c *ThreeScaleClient) CreateApp(accountIdStr, planIdStr, name, description string) (Application, error) {
+	var app Application
+	accountID, err := strconv.ParseInt(accountIdStr, 10, 64)
+	if err != nil {
+		return app, err
+	}
+
+	planID, err := strconv.ParseInt(planIdStr, 10, 64)
+	if err != nil {
+		return app, err
+	}
+
+	params := Params{
+		"description": description,
+	}
+
+	return c.CreateApplication(accountID, planID, name, params)
 }
 
 // ListApplications - List of applications for a given account.
