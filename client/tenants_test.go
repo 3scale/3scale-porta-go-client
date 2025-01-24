@@ -97,7 +97,14 @@ func TestCreateTenantOk(t *testing.T) {
 
 	c := NewThreeScale(NewTestAdminPortal(t), credential, httpClient)
 
-	signup, err := c.CreateTenant(orgName, userName, email, password)
+	params := Params{
+		"org_name": orgName,
+		"username": userName,
+		"email":    email,
+		"password": password,
+	}
+
+	signup, err := c.CreateTenant(params)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -117,11 +124,14 @@ func TestCreateTenantOk(t *testing.T) {
 
 func TestCreateTenantErrors(t *testing.T) {
 	op := func(c *ThreeScaleClient) error {
-		orgName := "someOrgName"
-		userName := "someUserName"
-		email := "someEmail@example.com"
-		password := "somePassword"
-		_, err := c.CreateTenant(orgName, userName, email, password)
+		params := Params{
+			"org_name": "someOrgName",
+			"username": "someUserName",
+			"email":    "someEmail@example.com",
+			"password": "somePassword",
+		}
+
+		_, err := c.CreateTenant(params)
 		return err
 	}
 	helperClientError(t, op, http.StatusCreated)

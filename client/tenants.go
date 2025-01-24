@@ -14,12 +14,11 @@ const (
 )
 
 // CreateTenant creates new tenant using 3scale API
-func (c *ThreeScaleClient) CreateTenant(orgName, username, email, password string) (*Tenant, error) {
+func (c *ThreeScaleClient) CreateTenant(params Params) (*Tenant, error) {
 	values := url.Values{}
-	values.Add("org_name", orgName)
-	values.Add("username", username)
-	values.Add("email", email)
-	values.Add("password", password)
+	for k, v := range params {
+		values.Add(k, v)
+	}
 
 	body := strings.NewReader(values.Encode())
 	req, err := c.buildPostReq(tenantCreate, body)
