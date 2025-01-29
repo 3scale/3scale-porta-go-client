@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -708,8 +709,8 @@ func TestReadApplication(t *testing.T) {
 		t.Fatal("application returned nil")
 	}
 
-	if *obj != application.Application {
-		t.Fatalf("Expected %v; got %v", application, *obj)
+	if !reflect.DeepEqual(*obj, application.Application) {
+		t.Fatalf("Expected %+v; got %+v", application.Application, *obj)
 	}
 }
 

@@ -27,23 +27,24 @@ type AfterResponseCB func(statusCode int, timeTaken time.Duration)
 
 // Application - API response for create app endpoint
 type Application struct {
-	ID                      int64  `json:"id"`
-	CreatedAt               string `json:"created_at"`
-	UpdatedAt               string `json:"updated_at"`
-	State                   string `json:"state"`
-	UserAccountID           string `json:"user_account_id"`
-	FirstTrafficAt          string `json:"first_traffic_at"`
-	FirstDailyTrafficAt     string `json:"first_daily_traffic_at"`
-	EndUserRequired         bool   `json:"end_user_required"`
-	ServiceID               int64  `json:"service_id"`
-	UserKey                 string `json:"user_key"`
-	ProviderVerificationKey string `json:"provider_verification_key"`
-	PlanID                  int64  `json:"plan_id"`
-	AppName                 string `json:"name"`
-	Description             string `json:"description"`
-	ApplicationId           string `json:"application_id"`
-	ExtraFields             string `json:"extra_fields"`
-	Error                   string `json:"error,omitempty"`
+	ID                      int64             `json:"id"`
+	CreatedAt               string            `json:"created_at"`
+	UpdatedAt               string            `json:"updated_at"`
+	State                   string            `json:"state"`
+	UserAccountID           string            `json:"user_account_id"`
+	FirstTrafficAt          string            `json:"first_traffic_at"`
+	FirstDailyTrafficAt     string            `json:"first_daily_traffic_at"`
+	EndUserRequired         bool              `json:"end_user_required"`
+	ServiceID               int64             `json:"service_id"`
+	UserKey                 string            `json:"user_key"`
+	ProviderVerificationKey string            `json:"provider_verification_key"`
+	PlanID                  int64             `json:"plan_id"`
+	AppName                 string            `json:"name"`
+	Description             string            `json:"description"`
+	ApplicationId           string            `json:"application_id"`
+	ExtraFields             string            `json:"extra_fields"`
+	Error                   string            `json:"error,omitempty"`
+	Annotations             map[string]string `json:"annotations,omitempty"`
 }
 
 // ApplicationElem - Holds a intenal application element
@@ -377,9 +378,10 @@ type Account struct {
 	AdminDomain  string `json:"admin_domain"`
 	Domain       string `json:"domain"`
 	// Optional info paramaters
-	FromEmail           string `json:"from_email,omitempty"`
-	FinanceSupportEmail string `json:"finance_support_email,omitempty"`
-	SiteAccessCode      string `json:"site_access_code,omitempty"`
+	FromEmail           string            `json:"from_email,omitempty"`
+	FinanceSupportEmail string            `json:"finance_support_email,omitempty"`
+	SiteAccessCode      string            `json:"site_access_code,omitempty"`
+	Annotations         map[string]string `json:"annotations,omitempty"`
 }
 
 type AccountElem struct {
@@ -425,6 +427,7 @@ type DeveloperAccountItem struct {
 	PoNumber               *string             `json:"po_number,omitempty"`
 	CreatedAt              *string             `json:"created_at,omitempty"`
 	UpdatedAt              *string             `json:"updated_at,omitempty"`
+	Annotations            map[string]string   `json:"annotations,omitempty"`
 }
 
 type DeveloperAccount struct {
@@ -453,25 +456,26 @@ type Tenant struct {
 }
 
 type ProductItem struct {
-	ID                        int64  `json:"id"`
-	Name                      string `json:"name"`
-	Description               string `json:"description"`
-	DeploymentOption          string `json:"deployment_option"`
-	State                     string `json:"state"`
-	SystemName                string `json:"system_name"`
-	BackendVersion            string `json:"backend_version"`
-	SupportEmail              string `json:"support_email"`
-	CreatedAt                 string `json:"created_at"`
-	UpdatedAt                 string `json:"updated_at"`
-	IntentionsRequired        bool   `json:"intentions_required"`
-	BuyersManageApps          bool   `json:"buyers_manage_apps"`
-	BuyersManageKeys          bool   `json:"buyers_manage_keys"`
-	ReferrerFiltersRequired   bool   `json:"referrer_filters_required"`
-	CustomKeysEnabled         bool   `json:"custom_keys_enabled"`
-	BuyerKeyRegenerateEnabled bool   `json:"buyer_key_regenerate_enabled"`
-	MandatoryAppKey           bool   `json:"mandatory_app_key"`
-	BuyerCanSelectPlan        bool   `json:"buyer_can_select_plan"`
-	BuyerPlanChangePermission string `json:"buyer_plan_change_permission"`
+	ID                        int64             `json:"id"`
+	Name                      string            `json:"name"`
+	Description               string            `json:"description"`
+	DeploymentOption          string            `json:"deployment_option"`
+	State                     string            `json:"state"`
+	SystemName                string            `json:"system_name"`
+	BackendVersion            string            `json:"backend_version"`
+	SupportEmail              string            `json:"support_email"`
+	CreatedAt                 string            `json:"created_at"`
+	UpdatedAt                 string            `json:"updated_at"`
+	IntentionsRequired        bool              `json:"intentions_required"`
+	BuyersManageApps          bool              `json:"buyers_manage_apps"`
+	BuyersManageKeys          bool              `json:"buyers_manage_keys"`
+	ReferrerFiltersRequired   bool              `json:"referrer_filters_required"`
+	CustomKeysEnabled         bool              `json:"custom_keys_enabled"`
+	BuyerKeyRegenerateEnabled bool              `json:"buyer_key_regenerate_enabled"`
+	MandatoryAppKey           bool              `json:"mandatory_app_key"`
+	BuyerCanSelectPlan        bool              `json:"buyer_can_select_plan"`
+	BuyerPlanChangePermission string            `json:"buyer_plan_change_permission"`
+	Annotations               map[string]string `json:"annotations,omitempty"`
 }
 
 type Product struct {
@@ -483,14 +487,15 @@ type ProductList struct {
 }
 
 type BackendApiItem struct {
-	ID              int64  `json:"id"`
-	Name            string `json:"name"`
-	SystemName      string `json:"system_name"`
-	Description     string `json:"description"`
-	PrivateEndpoint string `json:"private_endpoint"`
-	AccountID       int64  `json:"account_id"`
-	CreatedAt       string `json:"created_at"`
-	UpdatedAt       string `json:"updated_at"`
+	ID              int64             `json:"id"`
+	Name            string            `json:"name"`
+	SystemName      string            `json:"system_name"`
+	Description     string            `json:"description"`
+	PrivateEndpoint string            `json:"private_endpoint"`
+	AccountID       int64             `json:"account_id"`
+	CreatedAt       string            `json:"created_at"`
+	UpdatedAt       string            `json:"updated_at"`
+	Annotations     map[string]string `json:"annotations,omitempty"`
 }
 
 type BackendApi struct {
@@ -769,14 +774,15 @@ type APIcastPolicyRegistry struct {
 }
 
 type DeveloperUserItem struct {
-	ID        *int64  `json:"id,omitempty"`
-	State     *string `json:"state,omitempty"`
-	Role      *string `json:"role,omitempty"`
-	Username  *string `json:"username,omitempty"`
-	Password  *string `json:"password,omitempty"`
-	Email     *string `json:"email,omitempty"`
-	CreatedAt *string `json:"created_at,omitempty"`
-	UpdatedAt *string `json:"updated_at,omitempty"`
+	ID          *int64            `json:"id,omitempty"`
+	State       *string           `json:"state,omitempty"`
+	Role        *string           `json:"role,omitempty"`
+	Username    *string           `json:"username,omitempty"`
+	Password    *string           `json:"password,omitempty"`
+	Email       *string           `json:"email,omitempty"`
+	CreatedAt   *string           `json:"created_at,omitempty"`
+	UpdatedAt   *string           `json:"updated_at,omitempty"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 }
 
 type DeveloperUser struct {

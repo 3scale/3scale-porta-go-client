@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -963,8 +964,9 @@ func TestReadProduct(t *testing.T) {
 		endpoint        = fmt.Sprintf(productResourceEndpoint, productID)
 		product         = &Product{
 			Element: ProductItem{
-				ID:   productID,
-				Name: "myProduct",
+				ID:          productID,
+				Name:        "myProduct",
+				Annotations: nil,
 			},
 		}
 	)
@@ -1001,7 +1003,7 @@ func TestReadProduct(t *testing.T) {
 		t.Fatal("backendapi returned nil")
 	}
 
-	if *obj != *product {
+	if !reflect.DeepEqual(*obj, *product) {
 		t.Fatalf("Expected %v; got %v", *product, *obj)
 	}
 }
