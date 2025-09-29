@@ -31,7 +31,7 @@ type Application struct {
 	CreatedAt               string            `json:"created_at"`
 	UpdatedAt               string            `json:"updated_at"`
 	State                   string            `json:"state"`
-	UserAccountID           string            `json:"user_account_id"`
+	UserAccountID           int64             `json:"account_id"`
 	FirstTrafficAt          string            `json:"first_traffic_at"`
 	FirstDailyTrafficAt     string            `json:"first_daily_traffic_at"`
 	EndUserRequired         bool              `json:"end_user_required"`
@@ -328,8 +328,7 @@ type PolicyChain struct {
 	Configuration Configuration `json:"configuration"`
 }
 
-type Configuration struct {
-}
+type Configuration struct{}
 
 type ProxyRule struct {
 	ID                    int64         `json:"id"`
